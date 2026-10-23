@@ -1,0 +1,1973 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Construction Work Order | Oness Infra ERP</title>
+<!-- Tailwind CSS for modern responsive utility styling -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Font Awesome Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Google Fonts: Inter -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'sans-serif'],
+          mono: ['JetBrains Mono', 'monospace'],
+        },
+        colors: {
+          brand: {
+            900: '#0f172a',
+            800: '#1a2a3a',
+            700: '#23384e',
+            gold: '#c5a059',
+            goldLight: '#dfb76c',
+            surface: '#f8fafc',
+            border: '#cbd5e1'
+          }
+        }
+      }
+    }
+  }
+</script>
+
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f1f5f9;
+    color: #1e293b;
+    margin: 0;
+    padding: 24px 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .erp-container {
+    max-width: 1120px;
+    margin: 0 auto;
+    background: #ffffff;
+    box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.12), 0 4px 6px -2px rgba(15, 23, 42, 0.05);
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    position: relative;
+    overflow: hidden;
+  }
+  .editable-area {
+    outline: none;
+    min-height: 100px;
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px dashed #cbd5e1;
+    background-color: #fcfdfd;
+    transition: all 0.2s ease;
+  }
+  .editable-area:empty:before {
+    content: attr(placeholder);
+    color: #94a3b8;
+    pointer-events: none;
+    font-style: italic;
+  }
+  .editable-area:focus {
+    background-color: #fffdf5;
+    border-color: #c5a059;
+    box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.15);
+  }
+  .custom-table {
+    table-layout: fixed;
+    width: 100%;
+  }
+  .custom-table th {
+    background-color: #f1f5f9;
+    color: #1e293b;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border: 1px solid #cbd5e1;
+    padding: 10px 8px;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+  .custom-table td {
+    border: 1px solid #e2e8f0;
+    padding: 6px 8px;
+    font-size: 13px;
+    vertical-align: top;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+  .custom-table tr:hover {
+    background-color: #f8fafc;
+  }
+  .cell-input {
+    width: 100%;
+    border: 1px solid transparent;
+    padding: 5px 8px;
+    font-size: 13px;
+    background: transparent;
+    border-radius: 4px;
+    transition: border-color 0.15s ease;
+  }
+  .cell-input:focus {
+    outline: none;
+    border-color: #c5a059;
+    background: #ffffff;
+    box-shadow: 0 0 0 2px rgba(197, 160, 89, 0.2);
+  }
+  .cell-textarea {
+    width: 100%;
+    min-height: 34px;
+    border: 1px solid transparent;
+    padding: 5px 8px;
+    font-size: 13px;
+    line-height: 1.45;
+    background: transparent;
+    border-radius: 4px;
+    resize: none;
+    overflow: hidden;
+    font-family: inherit;
+    display: block;
+    box-sizing: border-box;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+  .cell-textarea:focus {
+    outline: none;
+    border-color: #c5a059;
+    background: #ffffff;
+    box-shadow: 0 0 0 2px rgba(197, 160, 89, 0.2);
+  }
+  .form-input-clean {
+    border-bottom: 1.5px solid #e2e8f0;
+    transition: all 0.2s ease;
+  }
+  .form-input-clean:focus {
+    outline: none;
+    border-bottom-color: #1a2a3a;
+    background: #f8fafc;
+  }
+
+  /* =========================================================
+     WORK ORDER PRINT LAYOUT — FIXED A4, REAL TEXT
+     Screen/mobile styles do not define the printed page width.
+     ========================================================= */
+  @page {
+    size: A4 portrait;
+    margin: 10mm 10mm 12mm 10mm;
+  }
+
+  @media print {
+    html,
+    body {
+      width: 210mm !important;
+      min-width: 210mm !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #fff !important;
+      color: #1e293b !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    body {
+      font-size: 9pt !important;
+    }
+
+    .no-print,
+    .actions,
+    .btn-action-col,
+    #statusToolbar,
+    .modal-backdrop,
+    #customModal,
+    #toastNotification {
+      display: none !important;
+    }
+
+    .erp-container {
+      box-sizing: border-box !important;
+      width: 190mm !important;
+      min-width: 190mm !important;
+      max-width: 190mm !important;
+      margin: 0 auto !important;
+      padding: 0 !important;
+      overflow: visible !important;
+      background: #fff !important;
+      box-shadow: none !important;
+      border: none !important;
+      border-radius: 0 !important;
+    }
+
+    .editable-area {
+      min-height: 0 !important;
+      border: none !important;
+      padding: 0 !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      overflow: visible !important;
+    }
+
+    input,
+    select,
+    textarea,
+    .cell-input,
+    .cell-textarea,
+    .form-input-clean {
+      box-sizing: border-box !important;
+      color: #1e293b !important;
+      font: inherit !important;
+      border: none !important;
+      outline: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      resize: none !important;
+      overflow: visible !important;
+      height: auto !important;
+      min-height: 0 !important;
+      max-height: none !important;
+      white-space: pre-wrap !important;
+      -webkit-appearance: none !important;
+      appearance: none !important;
+    }
+
+    .print-val-show {
+      display: inline !important;
+    }
+
+    .screen-val-hide {
+      display: none !important;
+    }
+
+    table,
+    .custom-table {
+      width: 100% !important;
+      max-width: 100% !important;
+      border-collapse: collapse !important;
+      border-spacing: 0 !important;
+      table-layout: fixed !important;
+      page-break-inside: auto !important;
+      break-inside: auto !important;
+    }
+
+    thead {
+      display: table-header-group !important;
+    }
+
+    tfoot {
+      display: table-footer-group !important;
+    }
+
+    tbody {
+      display: table-row-group !important;
+    }
+
+    tr {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      page-break-after: auto !important;
+    }
+
+    th,
+    td {
+      overflow-wrap: anywhere !important;
+      word-break: normal !important;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+      break-after: avoid !important;
+      page-break-after: avoid !important;
+    }
+
+    /* Long scope and terms should continue onto the next page. */
+    .terms,
+    .terms-section,
+    .scope-section,
+    .text-section,
+    #basicTermsBox,
+    #paymentTermsBox,
+    #specificTermsBox,
+    #scopeOfWorkBox {
+      break-inside: auto !important;
+      page-break-inside: auto !important;
+      overflow: visible !important;
+      height: auto !important;
+      max-height: none !important;
+    }
+
+    .signature-area,
+    .signature-block,
+    .signatures,
+    .avoid-break {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+    }
+
+    img {
+      max-width: 100% !important;
+      break-inside: avoid !important;
+    }
+
+    .overflow-x-auto,
+    .overflow-auto,
+    .overflow-y-auto {
+      overflow: visible !important;
+    }
+
+    a {
+      color: inherit !important;
+      text-decoration: none !important;
+    }
+
+    .page-break-before {
+      break-before: page !important;
+      page-break-before: always !important;
+    }
+
+    .page-break-after {
+      break-after: page !important;
+      page-break-after: always !important;
+    }
+  }
+</style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:Inter, sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:JetBrains Mono, monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.fixed{position:fixed}.inset-0{inset:0px}.bottom-5{bottom:1.25rem}.right-5{right:1.25rem}.top-5{top:1.25rem}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.my-3{margin-top:0.75rem;margin-bottom:0.75rem}.mb-10{margin-bottom:2.5rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.mt-0\.5{margin-top:0.125rem}.mt-12{margin-top:3rem}.mt-2\.5{margin-top:0.625rem}.mt-3{margin-top:0.75rem}.mt-5{margin-top:1.25rem}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-16{height:4rem}.h-2\.5{height:0.625rem}.h-24{height:6rem}.min-h-screen{min-height:100vh}.w-1\/2{width:50%}.w-1\/4{width:25%}.w-10{width:2.5rem}.w-12{width:3rem}.w-14{width:3.5rem}.w-16{width:4rem}.w-2\.5{width:0.625rem}.w-20{width:5rem}.w-28{width:7rem}.w-32{width:8rem}.w-36{width:9rem}.w-full{width:100%}.max-w-\[1120px\]{max-width:1120px}.max-w-md{max-width:28rem}.flex-1{flex:1 1 0%}.flex-shrink-0{flex-shrink:0}.border-collapse{border-collapse:collapse}.translate-y-\[-100px\]{--tw-translate-y:-100px;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.transform{transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes pulse{50%{opacity:.5}}.animate-pulse{animation:pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-start{justify-content:flex-start}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-2\.5{gap:0.625rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-5{gap:1.25rem}.gap-6{gap:1.5rem}.space-y-2\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.625rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.625rem * var(--tw-space-y-reverse))}.overflow-x-auto{overflow-x:auto}.rounded{border-radius:0.25rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-md{border-radius:0.375rem}.rounded-xl{border-radius:0.75rem}.rounded-b-lg{border-bottom-right-radius:0.5rem;border-bottom-left-radius:0.5rem}.rounded-t-lg{border-top-left-radius:0.5rem;border-top-right-radius:0.5rem}.border{border-width:1px}.border-x{border-left-width:1px;border-right-width:1px}.border-b{border-bottom-width:1px}.border-b-2{border-bottom-width:2px}.border-l-4{border-left-width:4px}.border-t{border-top-width:1px}.border-t-2{border-top-width:2px}.border-amber-200{--tw-border-opacity:1;border-color:rgb(253 230 138 / var(--tw-border-opacity, 1))}.border-brand-800{--tw-border-opacity:1;border-color:rgb(26 42 58 / var(--tw-border-opacity, 1))}.border-brand-gold{--tw-border-opacity:1;border-color:rgb(197 160 89 / var(--tw-border-opacity, 1))}.border-brand-gold\/30{border-color:rgb(197 160 89 / 0.3)}.border-brand-gold\/40{border-color:rgb(197 160 89 / 0.4)}.border-slate-100{--tw-border-opacity:1;border-color:rgb(241 245 249 / var(--tw-border-opacity, 1))}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240 / var(--tw-border-opacity, 1))}.border-slate-300{--tw-border-opacity:1;border-color:rgb(203 213 225 / var(--tw-border-opacity, 1))}.border-slate-600{--tw-border-opacity:1;border-color:rgb(71 85 105 / var(--tw-border-opacity, 1))}.border-slate-700{--tw-border-opacity:1;border-color:rgb(51 65 85 / var(--tw-border-opacity, 1))}.border-slate-800{--tw-border-opacity:1;border-color:rgb(30 41 59 / var(--tw-border-opacity, 1))}.bg-amber-100{--tw-bg-opacity:1;background-color:rgb(254 243 199 / var(--tw-bg-opacity, 1))}.bg-amber-50{--tw-bg-opacity:1;background-color:rgb(255 251 235 / var(--tw-bg-opacity, 1))}.bg-amber-500{--tw-bg-opacity:1;background-color:rgb(245 158 11 / var(--tw-bg-opacity, 1))}.bg-brand-800{--tw-bg-opacity:1;background-color:rgb(26 42 58 / var(--tw-bg-opacity, 1))}.bg-emerald-500{--tw-bg-opacity:1;background-color:rgb(16 185 129 / var(--tw-bg-opacity, 1))}.bg-slate-100{--tw-bg-opacity:1;background-color:rgb(241 245 249 / var(--tw-bg-opacity, 1))}.bg-slate-50{--tw-bg-opacity:1;background-color:rgb(248 250 252 / var(--tw-bg-opacity, 1))}.bg-slate-700{--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.bg-slate-900\/60{background-color:rgb(15 23 42 / 0.6)}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-gradient-to-br{background-image:linear-gradient(to bottom right, var(--tw-gradient-stops))}.from-brand-800{--tw-gradient-from:#1a2a3a var(--tw-gradient-from-position);--tw-gradient-to:rgb(26 42 58 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.to-slate-800{--tw-gradient-to:#1e293b var(--tw-gradient-to-position)}.p-1{padding:0.25rem}.p-1\.5{padding:0.375rem}.p-3{padding:0.75rem}.p-4{padding:1rem}.p-6{padding:1.5rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.pb-1\.5{padding-bottom:0.375rem}.pb-2{padding-bottom:0.5rem}.pb-5{padding-bottom:1.25rem}.pt-10{padding-top:2.5rem}.pt-2{padding-top:0.5rem}.pt-3{padding-top:0.75rem}.pt-4{padding-top:1rem}.text-left{text-align:left}.text-center{text-align:center}.text-right{text-align:right}.font-mono{font-family:JetBrains Mono, monospace}.font-sans{font-family:Inter, sans-serif}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-black{font-weight:900}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-normal{font-weight:400}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.italic{font-style:italic}.leading-relaxed{line-height:1.625}.leading-tight{line-height:1.25}.tracking-tight{letter-spacing:-0.025em}.tracking-tighter{letter-spacing:-0.05em}.tracking-wider{letter-spacing:0.05em}.tracking-widest{letter-spacing:0.1em}.text-amber-700{--tw-text-opacity:1;color:rgb(180 83 9 / var(--tw-text-opacity, 1))}.text-amber-800{--tw-text-opacity:1;color:rgb(146 64 14 / var(--tw-text-opacity, 1))}.text-brand-800{--tw-text-opacity:1;color:rgb(26 42 58 / var(--tw-text-opacity, 1))}.text-brand-gold{--tw-text-opacity:1;color:rgb(197 160 89 / var(--tw-text-opacity, 1))}.text-emerald-400{--tw-text-opacity:1;color:rgb(52 211 153 / var(--tw-text-opacity, 1))}.text-slate-200{--tw-text-opacity:1;color:rgb(226 232 240 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.text-slate-700{--tw-text-opacity:1;color:rgb(51 65 85 / var(--tw-text-opacity, 1))}.text-slate-800{--tw-text-opacity:1;color:rgb(30 41 59 / var(--tw-text-opacity, 1))}.text-slate-900{--tw-text-opacity:1;color:rgb(15 23 42 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-rose-400{--tw-text-opacity:1;color:rgb(251 113 133 / var(--tw-text-opacity, 1))}.opacity-0{opacity:0}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-200{transition-duration:200ms}.duration-300{transition-duration:300ms}.hover\:bg-amber-100:hover{--tw-bg-opacity:1;background-color:rgb(254 243 199 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-200:hover{--tw-bg-opacity:1;background-color:rgb(226 232 240 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-800:hover{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-900:hover{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.hover\:text-slate-800:hover{--tw-text-opacity:1;color:rgb(30 41 59 / var(--tw-text-opacity, 1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.hover\:text-rose-600:hover{--tw-text-opacity:1;color:rgb(225 29 72 / var(--tw-text-opacity, 1))}.hover\:shadow-xl:hover{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.focus\:border-brand-800:focus{--tw-border-opacity:1;border-color:rgb(26 42 58 / var(--tw-border-opacity, 1))}.focus\:ring-1:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.focus\:ring-brand-800:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(26 42 58 / var(--tw-ring-opacity, 1))}@media (min-width: 640px){.sm\:h-20{height:5rem}.sm\:w-20{width:5rem}.sm\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.sm\:p-10{padding:2.5rem}.sm\:text-2xl{font-size:1.5rem;line-height:2rem}}@media (min-width: 768px){.md\:w-auto{width:auto}.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.md\:flex-row{flex-direction:row}.md\:items-end{align-items:flex-end}.md\:items-center{align-items:center}.md\:justify-end{justify-content:flex-end}.md\:text-right{text-align:right}}</style><style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:Inter, sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:JetBrains Mono, monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.inset-0{inset:0px}.bottom-5{bottom:1.25rem}.left-3{left:0.75rem}.right-1{right:0.25rem}.right-5{right:1.25rem}.top-5{top:1.25rem}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.my-3{margin-top:0.75rem;margin-bottom:0.75rem}.mb-10{margin-bottom:2.5rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.mt-0\.5{margin-top:0.125rem}.mt-12{margin-top:3rem}.mt-2\.5{margin-top:0.625rem}.mt-3{margin-top:0.75rem}.mt-5{margin-top:1.25rem}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-16{height:4rem}.h-2\.5{height:0.625rem}.h-24{height:6rem}.min-h-screen{min-height:100vh}.w-1\/2{width:50%}.w-10{width:2.5rem}.w-12{width:3rem}.w-14{width:3.5rem}.w-16{width:4rem}.w-2\.5{width:0.625rem}.w-20{width:5rem}.w-24{width:6rem}.w-28{width:7rem}.w-3\/12{width:25%}.w-32{width:8rem}.w-36{width:9rem}.w-4\/12{width:33.333333%}.w-64{width:16rem}.w-full{width:100%}.max-w-\[1120px\]{max-width:1120px}.max-w-md{max-width:28rem}.flex-1{flex:1 1 0%}.flex-shrink-0{flex-shrink:0}.border-collapse{border-collapse:collapse}.translate-y-\[-100px\]{--tw-translate-y:-100px;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.transform{transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes pulse{50%{opacity:.5}}.animate-pulse{animation:pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-start{justify-content:flex-start}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:0.25rem}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-2\.5{gap:0.625rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-5{gap:1.25rem}.gap-6{gap:1.5rem}.space-y-2\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.625rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.625rem * var(--tw-space-y-reverse))}.overflow-x-auto{overflow-x:auto}.rounded{border-radius:0.25rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-md{border-radius:0.375rem}.rounded-xl{border-radius:0.75rem}.rounded-b-lg{border-bottom-right-radius:0.5rem;border-bottom-left-radius:0.5rem}.rounded-t-lg{border-top-left-radius:0.5rem;border-top-right-radius:0.5rem}.border{border-width:1px}.border-x{border-left-width:1px;border-right-width:1px}.border-b{border-bottom-width:1px}.border-b-2{border-bottom-width:2px}.border-l-4{border-left-width:4px}.border-t{border-top-width:1px}.border-t-2{border-top-width:2px}.border-amber-200{--tw-border-opacity:1;border-color:rgb(253 230 138 / var(--tw-border-opacity, 1))}.border-brand-800{--tw-border-opacity:1;border-color:rgb(26 42 58 / var(--tw-border-opacity, 1))}.border-brand-gold{--tw-border-opacity:1;border-color:rgb(197 160 89 / var(--tw-border-opacity, 1))}.border-brand-gold\/30{border-color:rgb(197 160 89 / 0.3)}.border-brand-gold\/40{border-color:rgb(197 160 89 / 0.4)}.border-emerald-300{--tw-border-opacity:1;border-color:rgb(110 231 183 / var(--tw-border-opacity, 1))}.border-slate-100{--tw-border-opacity:1;border-color:rgb(241 245 249 / var(--tw-border-opacity, 1))}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240 / var(--tw-border-opacity, 1))}.border-slate-300{--tw-border-opacity:1;border-color:rgb(203 213 225 / var(--tw-border-opacity, 1))}.border-slate-600{--tw-border-opacity:1;border-color:rgb(71 85 105 / var(--tw-border-opacity, 1))}.border-slate-700{--tw-border-opacity:1;border-color:rgb(51 65 85 / var(--tw-border-opacity, 1))}.border-slate-800{--tw-border-opacity:1;border-color:rgb(30 41 59 / var(--tw-border-opacity, 1))}.bg-amber-100{--tw-bg-opacity:1;background-color:rgb(254 243 199 / var(--tw-bg-opacity, 1))}.bg-amber-50{--tw-bg-opacity:1;background-color:rgb(255 251 235 / var(--tw-bg-opacity, 1))}.bg-brand-800{--tw-bg-opacity:1;background-color:rgb(26 42 58 / var(--tw-bg-opacity, 1))}.bg-emerald-100{--tw-bg-opacity:1;background-color:rgb(209 250 229 / var(--tw-bg-opacity, 1))}.bg-emerald-500{--tw-bg-opacity:1;background-color:rgb(16 185 129 / var(--tw-bg-opacity, 1))}.bg-slate-100{--tw-bg-opacity:1;background-color:rgb(241 245 249 / var(--tw-bg-opacity, 1))}.bg-slate-50{--tw-bg-opacity:1;background-color:rgb(248 250 252 / var(--tw-bg-opacity, 1))}.bg-slate-700{--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.bg-slate-900\/60{background-color:rgb(15 23 42 / 0.6)}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-gradient-to-br{background-image:linear-gradient(to bottom right, var(--tw-gradient-stops))}.from-brand-800{--tw-gradient-from:#1a2a3a var(--tw-gradient-from-position);--tw-gradient-to:rgb(26 42 58 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.to-slate-800{--tw-gradient-to:#1e293b var(--tw-gradient-to-position)}.p-1{padding:0.25rem}.p-1\.5{padding:0.375rem}.p-3{padding:0.75rem}.p-4{padding:1rem}.p-6{padding:1.5rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.pb-1\.5{padding-bottom:0.375rem}.pb-2{padding-bottom:0.5rem}.pb-5{padding-bottom:1.25rem}.pl-8{padding-left:2rem}.pr-20{padding-right:5rem}.pt-10{padding-top:2.5rem}.pt-2{padding-top:0.5rem}.pt-3{padding-top:0.75rem}.pt-4{padding-top:1rem}.text-left{text-align:left}.text-center{text-align:center}.text-right{text-align:right}.font-mono{font-family:JetBrains Mono, monospace}.font-sans{font-family:Inter, sans-serif}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-black{font-weight:900}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-normal{font-weight:400}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.italic{font-style:italic}.leading-relaxed{line-height:1.625}.leading-tight{line-height:1.25}.tracking-tight{letter-spacing:-0.025em}.tracking-tighter{letter-spacing:-0.05em}.tracking-wider{letter-spacing:0.05em}.tracking-widest{letter-spacing:0.1em}.text-amber-700{--tw-text-opacity:1;color:rgb(180 83 9 / var(--tw-text-opacity, 1))}.text-amber-800{--tw-text-opacity:1;color:rgb(146 64 14 / var(--tw-text-opacity, 1))}.text-brand-800{--tw-text-opacity:1;color:rgb(26 42 58 / var(--tw-text-opacity, 1))}.text-brand-gold{--tw-text-opacity:1;color:rgb(197 160 89 / var(--tw-text-opacity, 1))}.text-emerald-400{--tw-text-opacity:1;color:rgb(52 211 153 / var(--tw-text-opacity, 1))}.text-emerald-800{--tw-text-opacity:1;color:rgb(6 95 70 / var(--tw-text-opacity, 1))}.text-rose-400{--tw-text-opacity:1;color:rgb(251 113 133 / var(--tw-text-opacity, 1))}.text-slate-200{--tw-text-opacity:1;color:rgb(226 232 240 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.text-slate-700{--tw-text-opacity:1;color:rgb(51 65 85 / var(--tw-text-opacity, 1))}.text-slate-800{--tw-text-opacity:1;color:rgb(30 41 59 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-amber-400{--tw-text-opacity:1;color:rgb(251 191 36 / var(--tw-text-opacity, 1))}.opacity-0{opacity:0}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.outline-none{outline:2px solid transparent;outline-offset:2px}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-200{transition-duration:200ms}.duration-300{transition-duration:300ms}.hover\:bg-amber-100:hover{--tw-bg-opacity:1;background-color:rgb(254 243 199 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-100:hover{--tw-bg-opacity:1;background-color:rgb(241 245 249 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-200:hover{--tw-bg-opacity:1;background-color:rgb(226 232 240 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-800:hover{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-900:hover{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.hover\:bg-white:hover{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.hover\:text-rose-600:hover{--tw-text-opacity:1;color:rgb(225 29 72 / var(--tw-text-opacity, 1))}.hover\:text-slate-800:hover{--tw-text-opacity:1;color:rgb(30 41 59 / var(--tw-text-opacity, 1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.hover\:shadow-xl:hover{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.focus\:border-brand-800:focus{--tw-border-opacity:1;border-color:rgb(26 42 58 / var(--tw-border-opacity, 1))}.focus\:border-brand-gold:focus{--tw-border-opacity:1;border-color:rgb(197 160 89 / var(--tw-border-opacity, 1))}.focus\:bg-white:focus{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.focus\:ring-1:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.focus\:ring-brand-800:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(26 42 58 / var(--tw-ring-opacity, 1))}.focus\:ring-brand-gold\/20:focus{--tw-ring-color:rgb(197 160 89 / 0.2)}@media (min-width: 640px){.sm\:h-20{height:5rem}.sm\:w-20{width:5rem}.sm\:w-80{width:20rem}.sm\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.sm\:p-10{padding:2.5rem}.sm\:text-2xl{font-size:1.5rem;line-height:2rem}}@media (min-width: 768px){.md\:w-auto{width:auto}.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.md\:flex-row{flex-direction:row}.md\:items-end{align-items:flex-end}.md\:items-center{align-items:center}.md\:justify-end{justify-content:flex-end}.md\:text-right{text-align:right}}@media (min-width: 1024px){.lg\:w-auto{width:auto}}</style><style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:Inter, sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:JetBrains Mono, monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.inset-0{inset:0px}.bottom-5{bottom:1.25rem}.left-3{left:0.75rem}.right-1{right:0.25rem}.right-5{right:1.25rem}.top-5{top:1.25rem}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.my-3{margin-top:0.75rem;margin-bottom:0.75rem}.mb-10{margin-bottom:2.5rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.mt-0\.5{margin-top:0.125rem}.mt-12{margin-top:3rem}.mt-2\.5{margin-top:0.625rem}.mt-3{margin-top:0.75rem}.mt-5{margin-top:1.25rem}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-16{height:4rem}.h-2\.5{height:0.625rem}.h-24{height:6rem}.min-h-screen{min-height:100vh}.w-10{width:2.5rem}.w-12{width:3rem}.w-14{width:3.5rem}.w-16{width:4rem}.w-2\.5{width:0.625rem}.w-20{width:5rem}.w-24{width:6rem}.w-28{width:7rem}.w-3\/12{width:25%}.w-32{width:8rem}.w-36{width:9rem}.w-4\/12{width:33.333333%}.w-64{width:16rem}.w-full{width:100%}.max-w-\[1120px\]{max-width:1120px}.max-w-md{max-width:28rem}.flex-1{flex:1 1 0%}.flex-shrink-0{flex-shrink:0}.border-collapse{border-collapse:collapse}.translate-y-\[-100px\]{--tw-translate-y:-100px;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.transform{transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes pulse{50%{opacity:.5}}.animate-pulse{animation:pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-start{justify-content:flex-start}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:0.25rem}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-2\.5{gap:0.625rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-5{gap:1.25rem}.gap-6{gap:1.5rem}.space-y-2\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.625rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.625rem * var(--tw-space-y-reverse))}.overflow-x-auto{overflow-x:auto}.rounded{border-radius:0.25rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-md{border-radius:0.375rem}.rounded-xl{border-radius:0.75rem}.rounded-b-lg{border-bottom-right-radius:0.5rem;border-bottom-left-radius:0.5rem}.rounded-t-lg{border-top-left-radius:0.5rem;border-top-right-radius:0.5rem}.border{border-width:1px}.border-x{border-left-width:1px;border-right-width:1px}.border-b{border-bottom-width:1px}.border-b-2{border-bottom-width:2px}.border-l-4{border-left-width:4px}.border-t{border-top-width:1px}.border-t-2{border-top-width:2px}.border-amber-200{--tw-border-opacity:1;border-color:rgb(253 230 138 / var(--tw-border-opacity, 1))}.border-brand-800{--tw-border-opacity:1;border-color:rgb(26 42 58 / var(--tw-border-opacity, 1))}.border-brand-gold{--tw-border-opacity:1;border-color:rgb(197 160 89 / var(--tw-border-opacity, 1))}.border-brand-gold\/30{border-color:rgb(197 160 89 / 0.3)}.border-brand-gold\/40{border-color:rgb(197 160 89 / 0.4)}.border-emerald-300{--tw-border-opacity:1;border-color:rgb(110 231 183 / var(--tw-border-opacity, 1))}.border-slate-100{--tw-border-opacity:1;border-color:rgb(241 245 249 / var(--tw-border-opacity, 1))}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240 / var(--tw-border-opacity, 1))}.border-slate-300{--tw-border-opacity:1;border-color:rgb(203 213 225 / var(--tw-border-opacity, 1))}.border-slate-600{--tw-border-opacity:1;border-color:rgb(71 85 105 / var(--tw-border-opacity, 1))}.border-slate-700{--tw-border-opacity:1;border-color:rgb(51 65 85 / var(--tw-border-opacity, 1))}.border-slate-800{--tw-border-opacity:1;border-color:rgb(30 41 59 / var(--tw-border-opacity, 1))}.bg-amber-100{--tw-bg-opacity:1;background-color:rgb(254 243 199 / var(--tw-bg-opacity, 1))}.bg-amber-50{--tw-bg-opacity:1;background-color:rgb(255 251 235 / var(--tw-bg-opacity, 1))}.bg-amber-500{--tw-bg-opacity:1;background-color:rgb(245 158 11 / var(--tw-bg-opacity, 1))}.bg-brand-800{--tw-bg-opacity:1;background-color:rgb(26 42 58 / var(--tw-bg-opacity, 1))}.bg-emerald-100{--tw-bg-opacity:1;background-color:rgb(209 250 229 / var(--tw-bg-opacity, 1))}.bg-emerald-500{--tw-bg-opacity:1;background-color:rgb(16 185 129 / var(--tw-bg-opacity, 1))}.bg-slate-100{--tw-bg-opacity:1;background-color:rgb(241 245 249 / var(--tw-bg-opacity, 1))}.bg-slate-50{--tw-bg-opacity:1;background-color:rgb(248 250 252 / var(--tw-bg-opacity, 1))}.bg-slate-700{--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.bg-slate-900\/60{background-color:rgb(15 23 42 / 0.6)}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-gradient-to-br{background-image:linear-gradient(to bottom right, var(--tw-gradient-stops))}.from-brand-800{--tw-gradient-from:#1a2a3a var(--tw-gradient-from-position);--tw-gradient-to:rgb(26 42 58 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.to-slate-800{--tw-gradient-to:#1e293b var(--tw-gradient-to-position)}.p-1{padding:0.25rem}.p-1\.5{padding:0.375rem}.p-3{padding:0.75rem}.p-4{padding:1rem}.p-6{padding:1.5rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.pb-1\.5{padding-bottom:0.375rem}.pb-2{padding-bottom:0.5rem}.pb-5{padding-bottom:1.25rem}.pl-8{padding-left:2rem}.pr-20{padding-right:5rem}.pt-10{padding-top:2.5rem}.pt-2{padding-top:0.5rem}.pt-3{padding-top:0.75rem}.pt-4{padding-top:1rem}.text-left{text-align:left}.text-center{text-align:center}.text-right{text-align:right}.font-mono{font-family:JetBrains Mono, monospace}.font-sans{font-family:Inter, sans-serif}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-black{font-weight:900}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-normal{font-weight:400}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.italic{font-style:italic}.leading-relaxed{line-height:1.625}.leading-tight{line-height:1.25}.tracking-tight{letter-spacing:-0.025em}.tracking-tighter{letter-spacing:-0.05em}.tracking-wider{letter-spacing:0.05em}.tracking-widest{letter-spacing:0.1em}.text-amber-700{--tw-text-opacity:1;color:rgb(180 83 9 / var(--tw-text-opacity, 1))}.text-amber-800{--tw-text-opacity:1;color:rgb(146 64 14 / var(--tw-text-opacity, 1))}.text-brand-800{--tw-text-opacity:1;color:rgb(26 42 58 / var(--tw-text-opacity, 1))}.text-brand-gold{--tw-text-opacity:1;color:rgb(197 160 89 / var(--tw-text-opacity, 1))}.text-emerald-400{--tw-text-opacity:1;color:rgb(52 211 153 / var(--tw-text-opacity, 1))}.text-emerald-800{--tw-text-opacity:1;color:rgb(6 95 70 / var(--tw-text-opacity, 1))}.text-rose-400{--tw-text-opacity:1;color:rgb(251 113 133 / var(--tw-text-opacity, 1))}.text-slate-200{--tw-text-opacity:1;color:rgb(226 232 240 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.text-slate-700{--tw-text-opacity:1;color:rgb(51 65 85 / var(--tw-text-opacity, 1))}.text-slate-800{--tw-text-opacity:1;color:rgb(30 41 59 / var(--tw-text-opacity, 1))}.text-slate-900{--tw-text-opacity:1;color:rgb(15 23 42 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.opacity-0{opacity:0}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.outline-none{outline:2px solid transparent;outline-offset:2px}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-200{transition-duration:200ms}.duration-300{transition-duration:300ms}.hover\:bg-amber-100:hover{--tw-bg-opacity:1;background-color:rgb(254 243 199 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-100:hover{--tw-bg-opacity:1;background-color:rgb(241 245 249 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-200:hover{--tw-bg-opacity:1;background-color:rgb(226 232 240 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-800:hover{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-900:hover{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.hover\:bg-white:hover{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.hover\:text-rose-600:hover{--tw-text-opacity:1;color:rgb(225 29 72 / var(--tw-text-opacity, 1))}.hover\:text-slate-800:hover{--tw-text-opacity:1;color:rgb(30 41 59 / var(--tw-text-opacity, 1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.hover\:shadow-xl:hover{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.focus\:border-brand-800:focus{--tw-border-opacity:1;border-color:rgb(26 42 58 / var(--tw-border-opacity, 1))}.focus\:border-brand-gold:focus{--tw-border-opacity:1;border-color:rgb(197 160 89 / var(--tw-border-opacity, 1))}.focus\:bg-white:focus{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.focus\:ring-1:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.focus\:ring-brand-800:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(26 42 58 / var(--tw-ring-opacity, 1))}.focus\:ring-brand-gold\/20:focus{--tw-ring-color:rgb(197 160 89 / 0.2)}@media (min-width: 640px){.sm\:h-20{height:5rem}.sm\:w-20{width:5rem}.sm\:w-80{width:20rem}.sm\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.sm\:p-10{padding:2.5rem}.sm\:text-2xl{font-size:1.5rem;line-height:2rem}}@media (min-width: 768px){.md\:w-auto{width:auto}.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.md\:flex-row{flex-direction:row}.md\:items-end{align-items:flex-end}.md\:items-center{align-items:center}.md\:justify-end{justify-content:flex-end}.md\:text-right{text-align:right}}@media (min-width: 1024px){.lg\:w-auto{width:auto}}</style></head>
+<body class="min-h-screen">
+<div id="authGate" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900 p-4">
+  <section class="w-full max-w-md rounded-xl bg-white p-8 text-center shadow-2xl">
+    <img src="/assets/company-logo" alt="Oness Infra company logo" class="mx-auto mb-5 h-24 w-24 rounded-lg bg-white object-contain p-1">
+    <h1 class="text-xl font-bold text-brand-800">Oness Infra Work Order ERP</h1>
+    <p class="mt-2 text-sm text-slate-600">Sign in with your company Google Workspace account to continue.</p>
+    <div id="googleSignInButton" class="mt-6 flex justify-center"></div>
+    <p id="authStatus" role="status" class="mt-4 text-xs text-slate-500">Checking secure sign-in configuration...</p>
+  </section>
+</div>
+
+<!-- Top Action & Connectivity Bar (Screen only) -->
+<header id="statusToolbar" class="max-w-[1120px] mx-auto mb-4 bg-white rounded-lg p-3 px-4 shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-3 no-print">
+  <div class="flex items-center gap-3">
+    <div class="flex items-center gap-2">
+      <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+      <span id="reloadStatus" class="text-xs font-semibold text-slate-700">Google Sheet synchronized. Vendors: 29, Sites: 37</span>
+    </div>
+    <span class="text-slate-300">|</span>
+    <span class="text-xs text-slate-500 font-mono" id="appModeBadge">Google Apps Script Connected</span>
+  </div>
+
+  <!-- Work Order Search Bar & Quick Switcher -->
+  <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+    <div class="relative flex items-center">
+      <span class="absolute left-3 text-slate-400 text-xs pointer-events-none">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </span>
+      <input type="text" id="woSearchInput" list="woNumberList" placeholder="Search WO No. (e.g. RESI/OGR/PO1/20261001)" onkeydown="if(event.key === 'Enter') searchWorkOrder()" class="w-64 sm:w-80 pl-8 pr-20 py-1.5 text-xs font-mono font-medium text-slate-800 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-md focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 outline-none transition">
+      <datalist id="woNumberList"><option value="RESI/MK/PO1/20261014" label="Makarand Ji • Murli Gulab Singh Chouhan"></option></datalist>
+      <button type="button" onclick="searchWorkOrder()" class="absolute right-1 px-2.5 py-1 text-[11px] font-bold text-white bg-brand-800 hover:bg-slate-900 rounded transition flex items-center gap-1">
+        <span>Find</span>
+      </button>
+    </div>
+    <button type="button" onclick="resetToNewWorkOrder()" class="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 rounded border border-slate-300 transition flex items-center gap-1.5 shadow-xs" title="Create a fresh Work Order draft">
+      <i class="fa-solid fa-file-circle-plus text-brand-gold"></i> New WO
+    </button>
+  </div>
+
+  <div class="flex items-center gap-2">
+    <span id="signedInUser" class="hidden text-xs text-slate-600"></span>
+    <button id="signOutButton" onclick="signOutCompanyUser()" class="hidden px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 rounded border border-slate-300 transition">Sign out</button>
+    <button onclick="reloadFromSheet()" class="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded border border-slate-300 transition flex items-center gap-1.5">
+      <i class="fa-solid fa-arrows-rotate"></i> Refresh Data
+    </button>
+    <button onclick="loadSampleData()" class="px-3 py-1.5 text-xs font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 rounded border border-amber-200 transition flex items-center gap-1.5">
+      <i class="fa-solid fa-wand-magic-sparkles"></i> Load Demo Data
+    </button>
+  </div>
+</header>
+
+<main class="erp-container p-6 sm:p-10">
+  <!-- Top Corporate Bar -->
+  <header class="flex flex-col md:flex-row justify-between items-start md:items-center pb-5 mb-6 border-b-2 border-brand-800 gap-4">
+    <div class="flex items-center gap-4">
+      <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-lg bg-white text-brand-800 flex items-center justify-center font-black text-2xl tracking-tighter shadow-inner flex-shrink-0 border border-brand-gold/30 overflow-hidden">
+        <i class="fa-solid fa-building-shield text-3xl"></i>
+        <img src="http://127.0.0.1:8000/assets/company-logo" alt="Oness Infra company logo" class="hidden w-full h-full object-contain p-1" onload="this.previousElementSibling.classList.add('hidden'); this.classList.remove('hidden')" onerror="this.remove()">
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-xl sm:text-2xl font-black text-brand-800 tracking-tight leading-tight">ONESS INFRA PRIVATE LIMITED</h1>
+        </div>
+        <p class="text-[11px] text-slate-400">CIN: U45201MP2022PTC062145 • Registered Infrastructure Contractor</p>
+      </div>
+    </div>
+
+    <!-- WO Identification Header Box -->
+    <div class="w-full md:w-auto text-left md:text-right flex flex-col items-start md:items-end">
+      <div class="flex items-center gap-2">
+        <span id="woStatusBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold no-print">New Work Order Draft</span>
+        <div class="bg-brand-800 text-white px-4 py-2 rounded-md font-mono font-bold text-sm shadow-sm inline-flex items-center gap-2 border-l-4 border-brand-gold">
+          <span class="text-brand-gold text-xs uppercase tracking-wider font-sans font-semibold">WO No:</span>
+          <span id="displayWONo">COMM/NX/PO1/20261015</span>
+        </div>
+      </div>
+      
+      <div class="mt-3 flex flex-col gap-1.5 w-full md:w-auto">
+        <div class="flex items-center justify-start md:justify-end gap-2 text-xs">
+          <label class="font-bold text-slate-500 uppercase tracking-wider text-[10px]">Date:</label>
+          <input type="text" id="woDate" readonly="" class="font-semibold text-slate-800 text-xs bg-slate-50 px-2 py-0.5 rounded border border-slate-200 text-left md:text-right font-mono">
+        </div>
+        <div class="flex items-center justify-start md:justify-end gap-2 text-xs">
+          <label class="font-bold text-slate-500 uppercase tracking-wider text-[10px]">Work Type:</label>
+          <select id="workType" class="text-xs font-semibold text-slate-800 bg-slate-50 border border-slate-200 rounded px-2 py-1 focus:ring-1 focus:ring-brand-800">
+            <option value="Without Material">Labor Only (Without Material)</option>
+            <option value="With Material">Turnkey (With Material)</option>
+            <option value="Piece Rate">Piece Rate Contract</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Stakeholder & Project Location Details -->
+  <section class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+    <!-- Vendor / Contractor Details -->
+    <div class="border border-slate-200 rounded-lg p-4 bg-white shadow-xs">
+      <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-200">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-brand-800 flex items-center gap-2">
+          <i class="fa-solid fa-user-tie text-brand-gold"></i> Vendor / Contractor Details
+        </h3>
+        <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono font-medium">Party Profile</span>
+      </div>
+      <div class="space-y-2.5 text-xs">
+        <div class="flex items-center">
+          <label class="w-28 text-[11px] font-semibold text-slate-500 uppercase">Vendor Name:</label>
+          <select id="vendorSelect" onchange="autoFillVendor()" class="flex-1 font-semibold text-slate-800 bg-slate-50 border border-slate-200 rounded p-1.5 focus:border-brand-800"><option value="">-- Select Vendor / Contractor --</option><option value="Javed Sheikh">Javed Sheikh</option><option value="Raees Patel">Raees Patel</option><option value="Amit Jain">Amit Jain</option><option value="Sandeep Soni">Sandeep Soni</option><option value="Sunny">Sunny</option><option value="Om Durge">Om Durge</option><option value="Mahendra">Mahendra</option><option value="Aman Sharma">Aman Sharma</option><option value="Sunil Kumawat">Sunil Kumawat</option><option value="Ajay parihar">Ajay parihar</option><option value="Shivndra Contractor">Shivndra Contractor</option><option value="Chhotu Rathore">Chhotu Rathore</option><option value="Dharmendra Saini">Dharmendra Saini</option><option value="Murli Gulab Singh Chouhan">Murli Gulab Singh Chouhan</option><option value="Karan Pawar">Karan Pawar</option><option value="Pawan Chouhan">Pawan Chouhan</option><option value="Ashok Kumawat">Ashok Kumawat</option><option value="Vikrant Nagdev">Vikrant Nagdev</option><option value="Afzal Patel">Afzal Patel</option><option value="Asif Maahi Fabrication">Asif Maahi Fabrication</option><option value="Narendra Aluminium">Narendra Aluminium</option><option value="Jinarul">Jinarul</option><option value="Bhawarlal">Bhawarlal</option><option value="Siddhi Vinayak">Siddhi Vinayak</option><option value="Imarul Mondal">Imarul Mondal</option><option value="SHREE SAI AIRCON">SHREE SAI AIRCON</option><option value="VIP COLLABORATIVE">VIP COLLABORATIVE</option><option value="MAHI FABRICATION">MAHI FABRICATION</option><option value="Dilip Mourya">Dilip Mourya</option></select>
+        </div>
+        <div class="flex items-center">
+          <label class="w-28 text-[11px] font-semibold text-slate-500 uppercase">Address:</label>
+          <input type="text" id="vCode" placeholder="Registered office address" class="flex-1 form-input-clean p-1 text-slate-700">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="flex items-center">
+            <label class="w-20 text-[10px] font-semibold text-slate-500 uppercase">Aadhar:</label>
+            <input type="text" id="vAadhar" placeholder="XXXX-XXXX-XXXX" class="flex-1 form-input-clean p-1 font-mono text-[11px] text-slate-700">
+          </div>
+          <div class="flex items-center">
+            <label class="w-14 text-[10px] font-semibold text-slate-500 uppercase">PAN:</label>
+            <input type="text" id="vPan" placeholder="ABCDE1234F" class="flex-1 form-input-clean p-1 font-mono text-[11px] text-slate-700 uppercase">
+          </div>
+        </div>
+        <div class="flex items-center">
+          <label class="w-28 text-[11px] font-semibold text-slate-500 uppercase">GSTIN No:</label>
+          <input type="text" id="vGst" placeholder="23AAAAA0000A1Z5" class="flex-1 form-input-clean p-1 font-mono text-[11px] text-slate-700 uppercase">
+        </div>
+      </div>
+    </div>
+
+    <!-- Site & Delivery Details -->
+    <div class="border border-slate-200 rounded-lg p-4 bg-white shadow-xs">
+      <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-200">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-brand-800 flex items-center gap-2">
+          <i class="fa-solid fa-location-dot text-brand-gold"></i> Site &amp; Project Details
+        </h3>
+        <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono font-medium">Job Location</span>
+      </div>
+      <div class="space-y-2.5 text-xs">
+        <div class="flex items-center">
+          <label class="w-28 text-[11px] font-semibold text-slate-500 uppercase">Site Name:</label>
+          <select id="siteSelect" onchange="autoFillSite()" class="flex-1 font-semibold text-slate-800 bg-slate-50 border border-slate-200 rounded p-1.5 focus:border-brand-800"><option value="">-- Select Active Project / Site --</option><option value="Aditya Nexus">Aditya Nexus</option><option value="Amit Gangwal Ji">Amit Gangwal Ji</option><option value="Arpit Mangal">Arpit Mangal</option><option value="Atul Jhamad Ji">Atul Jhamad Ji</option><option value="Brig. Sanjeev">Brig. Sanjeev</option><option value="Deepkunj">Deepkunj</option><option value="Devendra Nayak">Devendra Nayak</option><option value="Dhanraj Ji">Dhanraj Ji</option><option value="Emerald Kingsvilla">Emerald Kingsvilla</option><option value="Hemant Verma">Hemant Verma</option><option value="Mr. Gourav Mogra Ji">Mr. Gourav Mogra Ji</option><option value="Jitendra Parihar">Jitendra Parihar</option><option value="Juniper">Juniper</option><option value="Makarand Ji">Makarand Ji</option><option value="Malwa County">Malwa County</option><option value="Mandana Resort">Mandana Resort</option><option value="Mr. Ajay Verma Ji">Mr. Ajay Verma Ji</option><option value="Ocube">Ocube</option><option value="Shailesh Chourasiya">Shailesh Chourasiya</option><option value="Oness Infra Pvt. Ltd.">Oness Infra Pvt. Ltd.</option><option value="Oyester">Oyester</option><option value="Umesh Kumar">Umesh Kumar</option><option value="Pankaj Sharma Ji">Pankaj Sharma Ji</option><option value="Parimal Dhoke Ji">Parimal Dhoke Ji</option><option value="Pawan Mohey">Pawan Mohey</option><option value="Prasant ji">Prasant ji</option><option value="Rajdeep Ji">Rajdeep Ji</option><option value="Rajesh Garg">Rajesh Garg</option><option value="Sahaj">Sahaj</option><option value="Sameer Bhatnagar">Sameer Bhatnagar</option><option value="Sanoh India Pvt. Ltd.">Sanoh India Pvt. Ltd.</option><option value="Santlal Sahu">Santlal Sahu</option><option value="Shivoham">Shivoham</option><option value="Suresh Chaturvedi Ji">Suresh Chaturvedi Ji</option><option value="Suyash Dixit">Suyash Dixit</option><option value="Swastika">Swastika</option><option value="Vaishali Sharma">Vaishali Sharma</option></select>
+        </div>
+        <div class="flex items-center">
+          <label class="w-28 text-[11px] font-semibold text-slate-500 uppercase">Site Address:</label>
+          <input type="text" id="sDelivered" placeholder="Plot / Scheme / Location Address" class="flex-1 form-input-clean p-1 text-slate-700">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="flex items-center">
+            <label class="w-20 text-[10px] font-semibold text-slate-500 uppercase">Incharge:</label>
+            <input type="text" id="sContact" placeholder="Site Supervisor" class="flex-1 form-input-clean p-1 text-[11px] text-slate-700">
+          </div>
+          <div class="flex items-center">
+            <label class="w-16 text-[10px] font-semibold text-slate-500 uppercase">Mobile:</label>
+            <input type="text" id="sEngineer" placeholder="+91 9876543210" class="flex-1 form-input-clean p-1 font-mono text-[11px] text-slate-700">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Work Schedule Section -->
+  <section class="mb-8">
+    <div class="bg-brand-800 text-white px-4 py-2 rounded-t-lg flex items-center justify-between">
+      <h2 class="text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+        <i class="fa-solid fa-list-check text-brand-gold"></i> Work Schedule &amp; Item Measurement Specifications
+      </h2>
+      <span class="text-[11px] text-slate-200 font-normal">All rates strictly in INR (₹)</span>
+    </div>
+    <div class="overflow-x-auto border-x border-b border-slate-200 rounded-b-lg">
+      <table class="custom-table w-full border-collapse">
+        <thead>
+          <tr>
+            <th class="w-10 text-center">#</th>
+            <th class="text-left w-3/12">Area of Specification</th>
+            <th class="text-left w-4/12">Technical Specification / Details</th>
+            <th class="w-24 text-right">Measurement</th>
+            <th class="w-32 text-center">Unit</th>
+            <th class="w-24 text-right">Rate (₹)</th>
+            <th class="w-32 text-right">Amount (₹)</th>
+            <th class="w-10 text-center no-print">Act</th>
+          </tr>
+        </thead>
+        <tbody id="workBody"><tr>
+    <td class="text-center font-mono text-xs text-slate-500 row-index">1</td>
+    <td><textarea rows="1" class="cell-textarea" placeholder="e.g. Living Area Tiles" oninput="autoResize(this)" style="height: 48px;"></textarea></td>
+    <td><textarea rows="1" class="cell-textarea" placeholder="e.g. 600x600mm Vitrified" oninput="autoResize(this)" style="height: 48px;"></textarea></td>
+    <td><input type="number" step="any" class="cell-input text-right font-mono area-val" value="" placeholder="0" oninput="calculateTotals()"></td>
+    <td>
+      <select class="cell-input text-xs font-medium text-slate-700 bg-white">
+        <option value="sqft" selected="">Square Feet (sqft)</option><option value="sqm">Square Meter (sqm)</option><option value="cft">Cubic Feet (cft)</option><option value="cum">Cubic Meter (cum)</option><option value="rmt">Running Meter (rmt)</option><option value="kg">Kilogram (kg)</option><option value="mt">Metric Ton (MT)</option><option value="nos">Numbers (Nos)</option><option value="day">Day</option><option value="hr">Hour</option><option value="lot">Lot</option><option value="job">Job Work</option>
+      </select>
+    </td>
+    <td><input type="number" step="any" class="cell-input text-right font-mono rate-val" value="" placeholder="0" oninput="calculateTotals()"></td>
+    <td class="text-right font-mono font-bold text-slate-800 row-amt">0.00</td>
+    <td class="text-center no-print btn-action-col">
+      <button type="button" onclick="removeRow(this, 'workBody')" class="text-rose-400 hover:text-rose-600 p-1 transition" title="Delete Row">
+        <i class="fa-regular fa-trash-can"></i>
+      </button>
+    </td>
+  </tr></tbody>
+        <tfoot>
+          <tr class="bg-slate-50 font-bold text-slate-800 border-t-2 border-slate-300">
+            <td colspan="3" class="text-right uppercase tracking-wider text-xs px-3 py-2 text-slate-600">Total Work Value:</td>
+            <td id="totalAreaSummary" class="text-right font-mono text-xs px-2 text-slate-700">0.00</td>
+            <td class="text-center text-xs text-slate-400">-</td>
+            <td class="text-right text-xs text-slate-500">Subtotal</td>
+            <td id="workGrandTotal" class="text-right font-mono text-sm text-brand-800 px-3 py-2 bg-amber-50">₹0.00</td>
+            <td class="no-print"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="mt-2.5 flex items-center justify-between no-print">
+      <button type="button" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded text-xs font-semibold transition flex items-center gap-1.5 shadow-xs" onclick="addWorkRow()">
+        <i class="fa-solid fa-plus text-[10px]"></i> Add Work Item
+      </button>
+      <span class="text-[11px] text-slate-500 italic">Amounts recalculate automatically on input change</span>
+    </div>
+  </section>
+
+  <!-- Payment Milestones Section -->
+  <section class="mb-8">
+    <div class="bg-brand-800 text-white px-4 py-2 rounded-t-lg flex items-center justify-between">
+      <h2 class="text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+        <i class="fa-solid fa-money-bill-transfer text-brand-gold"></i> Payment Stages &amp; Milestone Triggers
+      </h2>
+      <div id="percentageBadge" class="text-[11px] px-2 py-0.5 rounded font-mono font-bold bg-amber-500 text-slate-900">Milestone Total: 0.0%</div>
+    </div>
+    <div class="overflow-x-auto border-x border-b border-slate-200 rounded-b-lg">
+      <table class="custom-table w-full border-collapse">
+        <thead>
+          <tr>
+            <th class="w-12 text-center">Stage</th>
+            <th class="text-left">Milestone Description</th>
+            <th class="w-36 text-left">Scope / Area Type</th>
+            <th class="w-28 text-right">Percentage (%)</th>
+            <th class="w-36 text-right">Payable Amount (₹)</th>
+            <th class="w-10 text-center no-print">Act</th>
+          </tr>
+        </thead>
+        <tbody id="milestoneBody"><tr>
+    <td class="text-center font-mono text-xs text-slate-500 row-index">1</td>
+    <td><textarea rows="1" class="cell-textarea" placeholder="e.g. Plinth &amp; Foundation Completion" oninput="autoResize(this)" style="height: 34px;"></textarea></td>
+    <td><textarea rows="1" class="cell-textarea" placeholder="e.g. TOTAL" oninput="autoResize(this)" style="height: 34px;">TOTAL</textarea></td>
+    <td><input type="number" step="any" class="cell-input text-right font-mono pct-val" value="" placeholder="0" oninput="calculateTotals()"></td>
+    <td class="text-right font-mono font-bold text-slate-800 milestone-amt">0.00</td>
+    <td class="text-center no-print btn-action-col">
+      <button type="button" onclick="removeRow(this, 'milestoneBody')" class="text-rose-400 hover:text-rose-600 p-1 transition" title="Delete Stage">
+        <i class="fa-regular fa-trash-can"></i>
+      </button>
+    </td>
+  </tr></tbody>
+        <tfoot>
+          <tr class="bg-slate-50 font-bold text-slate-800 border-t-2 border-slate-300">
+            <td colspan="3" class="text-right uppercase tracking-wider text-xs px-3 py-2 text-slate-600">Total Milestone Allocation:</td>
+            <td id="milestonePctSummary" class="text-right font-mono text-xs px-3">0.0%</td>
+            <td id="milestoneAmtSummary" class="text-right font-mono text-sm text-brand-800 px-3 py-2 bg-amber-50">₹0.00</td>
+            <td class="no-print"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="mt-2.5 flex items-center justify-between no-print">
+      <button type="button" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded text-xs font-semibold transition flex items-center gap-1.5 shadow-xs" onclick="addMilestoneRow()">
+        <i class="fa-solid fa-plus text-[10px]"></i> Add Milestone Stage
+      </button>
+      <span class="text-[11px] text-slate-500 italic">Payable amounts are calculated as (% / 100) * Total Work Value</span>
+    </div>
+  </section>
+
+  <!-- Scope of Work & Terms Clauses (Single Column Full Width Layout) -->
+  <section class="grid grid-cols-1 gap-4 mb-10">
+    <!-- Scope of Work (Blank by default) -->
+    <div class="border border-slate-200 rounded-lg p-4 bg-white shadow-xs">
+      <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-200">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-brand-800 flex items-center gap-1.5">
+          <i class="fa-solid fa-compass-drafting text-brand-gold"></i> 1. Scope of Work
+        </h4>
+        <span class="text-[10px] text-slate-400 italic">Custom scope / project specifications</span>
+      </div>
+      <div class="editable-area" id="scopeOfWorkBox" contenteditable="true" placeholder="Enter detailed scope of work here..."><span style="color: rgb(0, 0, 0); font-family: &quot;Open Sans&quot;, Arial, sans-serif; font-size: 14px; text-align: justify; background-color: rgb(255, 255, 255);">Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, "Lorem ipsum dolor sit amet..", comes from a line in section 1.10.32.</span><div><span style="color: rgb(0, 0, 0); font-family: &quot;Open Sans&quot;, Arial, sans-serif; font-size: 14px; text-align: justify; background-color: rgb(255, 255, 255);">There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable. If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything embarrassing hidden in the middle of text. All the Lorem Ipsum generators on the Internet tend to repeat predefined chunks as necessary, making this the first true generator on the Internet. It uses a dictionary of over 200 Latin words, combined with a handful of model sentence structures, to generate Lorem Ipsum which looks reasonable. The generated Lorem Ipsum is therefore always free from repetition, injected humour, or non-characteristic words etc.</span><span style="color: rgb(0, 0, 0); font-family: &quot;Open Sans&quot;, Arial, sans-serif; font-size: 14px; text-align: justify; background-color: rgb(255, 255, 255);"></span></div><div><div style="margin: 0px 14.3906px 0px 28.7969px; padding: 0px; width: 436.797px; float: left; color: rgb(0, 0, 0); font-family: &quot;Open Sans&quot;, Arial, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);"><h2 style="margin: 0px 0px 10px; padding: 0px; font-weight: 400; font-family: DauphinPlain; font-size: 24px; line-height: 24px;">What is Lorem Ipsum?</h2><p style="margin: 0px 0px 15px; padding: 0px; text-align: justify;"><strong style="margin: 0px; padding: 0px;">Lorem Ipsum</strong> is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966, when designers at Letraset and James Mosley, the librarian at St Bride Printing Library in London, took a 1914 Cicero translation and scrambled it to make dummy text for Letraset's Body Type sheets. It has survived not only many decades, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised thanks to these sheets and more recently with desktop publishing software like Aldus PageMaker and Microsoft Word including versions of Lorem Ipsum.</p></div><div style="margin: 0px 28.7969px 0px 14.3906px; padding: 0px; width: 436.797px; float: right; color: rgb(0, 0, 0); font-family: &quot;Open Sans&quot;, Arial, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);"><h2 style="margin: 0px 0px 10px; padding: 0px; font-weight: 400; font-family: DauphinPlain; font-size: 24px; line-height: 24px;">Why do we use it?</h2><p style="margin: 0px 0px 15px; padding: 0px; text-align: justify;">It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).</p></div><br style="margin: 0px; padding: 0px; clear: both; color: rgb(0, 0, 0); font-family: &quot;Open Sans&quot;, Arial, sans-serif; font-size: 14px; text-align: center; background-color: rgb(255, 255, 255);"><div style="margin: 0px 14.3906px 0px 28.7969px; padding: 0px; width: 436.797px; float: left; color: rgb(0, 0, 0); font-family: &quot;Open Sans&quot;, Arial, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);"><h2 style="margin: 0px 0px 10px; padding: 0px; font-weight: 400; font-family: DauphinPlain; font-size: 24px; line-height: 24px;">Where does it come from?</h2><p style="margin: 0px 0px 15px; padding: 0px; text-align: justify;">Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, "Lorem ipsum dolor sit amet..", comes from a line in section 1.10.32.</p><p style="margin: 0px 0px 15px; padding: 0px; text-align: justify;">The standard chunk of Lorem Ipsum used since 1966 is reproduced below for those interested. Sections 1.10.32 and 1.10.33 from "de Finibus Bonorum et Malorum" by Cicero are also reproduced in their exact original form, accompanied by English versions from the 1914 translation by H. Rackham.</p></div><div style="margin: 0px 28.7969px 0px 14.3906px; padding: 0px; width: 436.797px; float: right; color: rgb(0, 0, 0); font-family: &quot;Open Sans&quot;, Arial, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);"><h2 style="margin: 0px 0px 10px; padding: 0px; font-weight: 400; font-family: DauphinPlain; font-size: 24px; line-height: 24px;">Where can I get some?</h2><p style="margin: 0px 0px 15px; padding: 0px; text-align: justify;">There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable. If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything embarrassing hidden in the middle of text. All the Lorem Ipsum generators on the Internet tend to repeat predefined chunks as necessary, making this the first true generator on the Internet. It uses a dictionary of over 200 Latin words, combined with a handful of model sentence structures, to generate Lorem Ipsum which looks reasonable. The generated Lorem Ipsum is therefore always free from repetition, injected humour, or non-characteristic words etc.</p></div></div></div>
+    </div>
+
+    <!-- Basic Terms & Conditions -->
+    <div class="border border-slate-200 rounded-lg p-4 bg-white shadow-xs">
+      <h4 class="text-xs font-bold uppercase tracking-wider text-brand-800 mb-2 pb-1.5 border-b border-slate-200 flex items-center gap-1.5">
+        <i class="fa-solid fa-shield-halved text-brand-gold"></i> 2. Basic Terms &amp; Conditions
+      </h4>
+      <div class="editable-area" id="basicTermsBox" contenteditable="true">
+        - Work to be completed within stipulated timeline from date of issue.<br>
+        - Defect liability period is 12 calendar months from the final handover certificate.<br>
+        - Any rework arising due to substandard workmanship will be borne entirely by the contractor.
+      </div>
+    </div>
+
+    <!-- Payment Terms & Conditions -->
+    <div class="border border-slate-200 rounded-lg p-4 bg-white shadow-xs">
+      <h4 class="text-xs font-bold uppercase tracking-wider text-brand-800 mb-2 pb-1.5 border-b border-slate-200 flex items-center gap-1.5">
+        <i class="fa-solid fa-receipt text-brand-gold"></i> 3. Payment Terms &amp; Conditions
+      </h4>
+      <div class="editable-area" id="paymentTermsBox" contenteditable="true">
+        - Running account bills (RA Bills) to be verified and signed by Site Engineer &amp; Project Head.<br>
+        - 5% retention money will be deducted from each running bill and released after the liability period.<br>
+        - Applicable statutory TDS and GST-TDS deductions will be made at source.
+      </div>
+    </div>
+
+    <!-- Specific Terms & Conditions -->
+    <div class="border border-slate-200 rounded-lg p-4 bg-white shadow-xs">
+      <h4 class="text-xs font-bold uppercase tracking-wider text-brand-800 mb-2 pb-1.5 border-b border-slate-200 flex items-center gap-1.5">
+        <i class="fa-solid fa-file-contract text-brand-gold"></i> 4. Specific Site Terms &amp; Safety
+      </h4>
+      <div class="editable-area" id="specificTermsBox" contenteditable="true">
+        - Strict adherence to onsite Personal Protective Equipment (helmets, safety boots, jackets).<br>
+        - Water and construction electricity points provided at a single designated location onsite.<br>
+        - No child labor or unauthorized personnel permitted on premises under any circumstance.
+      </div>
+    </div>
+  </section>
+
+  <!-- Signatures Block -->
+  <section class="signature-area pt-10 border-t-2 border-slate-300 grid grid-cols-2 sm:grid-cols-4 gap-6 text-center text-xs">
+    <div class="flex flex-col justify-end items-center h-24">
+      <div class="w-full border-t border-slate-800 pt-2 font-bold text-slate-800">Site Engineer / Prepared By</div>
+      <span class="text-[10px] text-slate-400">Sign &amp; Stamp</span>
+    </div>
+    <div class="flex flex-col justify-end items-center h-24">
+      <div class="w-full border-t border-slate-800 pt-2 font-bold text-slate-800">AGM (Projects)</div>
+      <span class="text-[10px] text-slate-400">Reviewed By</span>
+    </div>
+    <div class="flex flex-col justify-end items-center h-24">
+      <div class="w-full border-t border-slate-800 pt-2 font-bold text-slate-800">COO / Director</div>
+    </div>
+    <div class="flex flex-col justify-end items-center h-24">
+      <div class="w-full border-t border-slate-800 pt-2 font-bold text-slate-800">Contractor / Vendor</div>
+      <span class="text-[10px] text-slate-400">Accepted &amp; Confirmed</span>
+    </div>
+  </section>
+
+  <!-- Footer Notice -->
+  <footer class="mt-12 pt-4 border-t border-slate-200 text-center text-[10px] text-slate-500">
+    <p class="font-medium text-slate-600">Correspondence Address: 2nd Floor, Office No. 202, LIC Tower, Scheme No 54, Indore, Madhya Pradesh 452010</p>
+    <p class="mt-0.5 text-slate-400">This document is generated by Oness Infra Enterprise ERP System. Valid with authorized organizational seals.</p>
+  </footer>
+</main>
+
+<!-- Floating Action Navigation Controls (Screen Only) -->
+<div class="fixed bottom-5 right-5 flex items-center gap-3 no-print z-50">
+  <button onclick="handlePrintPdf()" class="px-4 py-2.5 bg-slate-700 hover:bg-slate-800 text-white rounded-lg font-bold text-xs shadow-lg hover:shadow-xl transition flex items-center gap-2 border border-slate-600">
+    <i class="fa-solid fa-print"></i> Print / Save PDF
+  </button>
+  <button onclick="saveToLog()" class="px-5 py-2.5 bg-brand-800 hover:bg-slate-900 text-brand-gold hover:text-white rounded-lg font-bold text-xs shadow-lg hover:shadow-xl transition flex items-center gap-2 border border-brand-gold/40">
+    <i class="fa-solid fa-cloud-arrow-up"></i> Submit to Log
+  </button>
+</div>
+
+<!-- Custom Confirmation Modal (Replaces browser window.confirm / alert) -->
+<div id="customModal" class="modal-backdrop fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 border border-slate-200 animate-in fade-in zoom-in duration-200">
+    <div class="flex items-center gap-3 mb-3">
+      <div id="modalIconContainer" class="w-10 h-10 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0 text-lg">
+        <i class="fa-solid fa-circle-question"></i>
+      </div>
+      <div>
+        <h3 id="modalTitle" class="text-base font-bold text-slate-800">Confirmation</h3>
+        <p id="modalSubhead" class="text-xs text-slate-500">Oness Infra ERP Notification</p>
+      </div>
+    </div>
+    <p id="modalMessage" class="text-xs text-slate-600 my-3 leading-relaxed">
+      Are you sure you want to proceed?
+    </p>
+    <div class="flex items-center justify-end gap-2.5 mt-5 pt-3 border-t border-slate-100">
+      <button id="modalCancelBtn" onclick="closeCustomModal()" class="px-4 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-md transition">
+        Cancel
+      </button>
+      <button id="modalConfirmBtn" class="px-4 py-1.5 text-xs font-semibold text-white bg-brand-800 hover:bg-slate-900 rounded-md transition">
+        Confirm
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Custom Toast Notification -->
+<div id="toastNotification" class="fixed top-5 right-5 z-50 transform transition-all duration-300 translate-y-[-100px] opacity-0 pointer-events-none">
+  <div id="toastBox" class="bg-slate-900 text-white text-xs px-4 py-3 rounded-lg shadow-xl flex items-center gap-3 border border-slate-700">
+    <span id="toastIcon"><i class="fa-solid fa-circle-check text-emerald-400"></i></span>
+    <span id="toastText" class="font-medium">Project site linked: Aditya Nexus</span>
+  </div>
+</div>
+
+<script>
+const API_BASE_URL = window.location.port === "5500" || window.location.protocol === "file:"
+  ? "http://127.0.0.1:8000"
+  : window.location.origin;
+let companyIdToken = null;
+let companyApiConfiguration = null;
+const companyLogoImage = document.querySelector('img[alt="Oness Infra company logo"]');
+if (companyLogoImage) companyLogoImage.src = `${API_BASE_URL}/assets/company-logo`;
+
+async function companyApiFetch(path, options = {}) {
+  if (!companyIdToken) {
+    throw new Error("Sign in with your company Google account to continue.");
+  }
+  const headers = new Headers(options.headers || {});
+  headers.set("Authorization", `Bearer ${companyIdToken}`);
+  return fetch(`${API_BASE_URL}${path}`, {
+    ...options,
+    headers,
+    cache: "no-store",
+    credentials: "omit"
+  });
+}
+
+function setAuthStatus(message, isError = false) {
+  const status = document.getElementById("authStatus");
+  status.textContent = message;
+  status.classList.toggle("text-rose-600", isError);
+  status.classList.toggle("text-slate-500", !isError);
+}
+
+function renderGoogleSignIn() {
+  if (!companyApiConfiguration?.configured || !companyApiConfiguration.googleClientId) {
+    setAuthStatus("Sign-in is not configured. Ask your administrator to finish the Render and Google Workspace setup.", true);
+    return;
+  }
+  if (!window.google?.accounts?.id) {
+    setAuthStatus("Google sign-in could not load. Check the network or your browser's content blockers, then reload.", true);
+    return;
+  }
+  window.google.accounts.id.initialize({
+    client_id: companyApiConfiguration.googleClientId,
+    callback: window.handleGoogleCredential,
+    auto_select: false
+  });
+  window.google.accounts.id.renderButton(document.getElementById("googleSignInButton"), {
+    type: "standard",
+    theme: "outline",
+    size: "large",
+    text: "signin_with",
+    shape: "rectangular"
+  });
+  setAuthStatus("Company accounts only. Your sign-in token stays in this browser session.");
+}
+
+window.handleGoogleCredential = async function (credentialResponse) {
+  setAuthStatus("Verifying your company account...");
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/session`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${credentialResponse.credential}` },
+      cache: "no-store",
+      credentials: "omit"
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.detail || `Sign-in failed with status ${response.status}.`);
+    }
+    companyIdToken = credentialResponse.credential;
+    document.body.classList.add("authenticated");
+    document.getElementById("authGate").classList.add("hidden");
+    document.getElementById("signedInUser").textContent = result.email;
+    document.getElementById("signedInUser").classList.remove("hidden");
+    document.getElementById("signOutButton").classList.remove("hidden");
+    await startWorkOrderApp();
+  } catch (error) {
+    companyIdToken = null;
+    console.error("Company Google sign-in failed:", error);
+    setAuthStatus(error.message || "Unable to verify this company account.", true);
+  }
+};
+
+async function initializeCompanyAuthentication() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/config`, { cache: "no-store", credentials: "omit" });
+    if (!response.ok) throw new Error(`Configuration request failed with status ${response.status}.`);
+    companyApiConfiguration = await response.json();
+    if (!companyApiConfiguration.configured) {
+      renderGoogleSignIn();
+      return;
+    }
+    const gisScript = document.createElement("script");
+    gisScript.src = "https://accounts.google.com/gsi/client";
+    gisScript.async = true;
+    gisScript.defer = true;
+    gisScript.onload = renderGoogleSignIn;
+    gisScript.onerror = () => setAuthStatus("Could not load Google sign-in. Check the network or try again later.", true);
+    document.head.appendChild(gisScript);
+  } catch (error) {
+    console.error("Company sign-in configuration failed:", error);
+    setAuthStatus("Could not connect to the secure service. Confirm the Render backend is running.", true);
+  }
+}
+
+function signOutCompanyUser() {
+  companyIdToken = null;
+  window.location.reload();
+}
+
+// Default comprehensive sample database for standalone preview & fallback
+const FALLBACK_DATABASE = {
+  vendors: [
+    {
+      name: "Shiv Buildcon & Infra",
+      Code: "VND-2024-001",
+      "Aadhar No": "8472-1094-8832",
+      "PAN No": "AAACS7849K",
+      "GST No": "23AAACS7849K1Z4"
+    },
+    {
+      name: "Mahadev Civil Works",
+      Code: "VND-2024-002",
+      "Aadhar No": "6512-9844-3120",
+      "PAN No": "BVTPM4120L",
+      "GST No": "23BVTPM4120L1ZP"
+    },
+    {
+      name: "Royal Structural Engineering",
+      Code: "VND-2024-003",
+      "Aadhar No": "9982-3411-5460",
+      "PAN No": "CPDPR9021M",
+      "GST No": "23CPDPR9021M1ZX"
+    }
+  ],
+  sites: [
+    {
+      name: "Oness Grandeur Residency",
+      "Project Code": "OGR",
+      Type: "RESI",
+      Address: "Plot 14-16, Super Corridor, Sector B, Indore (MP)",
+      "Contact Person": "Er. Rajesh Sharma",
+      "Mo. No.": "+91 98260 12345"
+    },
+    {
+      name: "Oness Central Commercial Complex",
+      "Project Code": "OCCC",
+      Type: "COMM",
+      Address: "AB Road, Vijay Nagar Square, Indore (MP)",
+      "Contact Person": "Er. Amit Verma",
+      "Mo. No.": "+91 97550 54321"
+    },
+    {
+      name: "Oness Industrial Logistics Park",
+      "Project Code": "OILP",
+      Type: "IND",
+      Address: "Pithampur Industrial Area, Sector 3, Dhar Road",
+      "Contact Person": "Er. Sandeep Joshi",
+      "Mo. No.": "+91 94250 88765"
+    }
+  ],
+  woLog: [
+    { 
+      Site: "Oness Grandeur Residency", 
+      "WO Number": "RESI/OGR/PO1/20261001",
+      Contractor: "Shiv Buildcon & Infra",
+      workType: "Without Material",
+      woDate: "01/10/2026",
+      items: [
+        { area: "Foundation Footing & Raft Cast", tech: "M30 Grade RMC Casting with dewatering", measurement: 3500, unit: "cft", rate: 380 },
+        { area: "Plinth Beam Concreting", tech: "Reinforced cement concrete with steel shuttering", measurement: 850, unit: "rmt", rate: 410 }
+      ],
+      milestones: [
+        { desc: "Excavation and Raft Completion", type: "TOTAL", pct: 40 },
+        { desc: "Plinth Level Beam & Shuttering", type: "TOTAL", pct: 40 },
+        { desc: "Handover & Retention release", type: "TOTAL", pct: 20 }
+      ]
+    },
+    { 
+      Site: "Oness Grandeur Residency", 
+      "WO Number": "RESI/OGR/PO2/20261010",
+      Contractor: "Mahadev Civil Works",
+      workType: "With Material",
+      woDate: "10/10/2026",
+      items: [
+        { area: "External Brickwork 8 inch", tech: "Red clay bricks with 1:4 cement mortar mix", measurement: 3200, unit: "sqft", rate: 165 },
+        { area: "Internal AAC Block Partition", tech: "Lightweight AAC Blocks 150mm with joint adhesive", measurement: 2400, unit: "sqft", rate: 115 }
+      ],
+      milestones: [
+        { desc: "Ground Floor Blockwork", type: "TOTAL", pct: 50 },
+        { desc: "First Floor & Parapet Masonry", type: "TOTAL", pct: 50 }
+      ]
+    },
+    { 
+      Site: "Oness Central Commercial Complex", 
+      "WO Number": "COMM/OCCC/PO1/20261012",
+      Contractor: "Royal Structural Engineering",
+      workType: "Piece Rate",
+      woDate: "12/10/2026",
+      items: [
+        { area: "Heavy Structural Steel Truss Erection", tech: "ISMB 300 & ISMC channels with epoxy primer coating", measurement: 24, unit: "mt", rate: 68000 }
+      ],
+      milestones: [
+        { desc: "Material Delivery & Site Fab", type: "TOTAL", pct: 30 },
+        { desc: "Truss Assembly & High-Torque Bolting", type: "TOTAL", pct: 50 },
+        { desc: "Alignment & Final Load Test Certificate", type: "TOTAL", pct: 20 }
+      ]
+    }
+  ],
+  terms: {
+    specific: [
+      "Strict adherence to onsite Personal Protective Equipment (helmets, safety boots, jackets).",
+      "Water and construction electricity points provided at a single designated location onsite.",
+      "No child labor or unauthorized personnel permitted on premises under any circumstance."
+    ],
+    payment: [
+      "Running account bills (RA Bills) to be verified and signed by Site Engineer & Project Head.",
+      "5% retention money will be deducted from each running bill and released after the liability period.",
+      "Applicable statutory TDS and GST-TDS deductions will be made at source."
+    ],
+    basic: [
+      "Work to be completed within stipulated timeline from date of issue.",
+      "Defect liability period is 12 calendar months from the final handover certificate.",
+      "Any rework arising due to substandard workmanship will be borne entirely by the contractor."
+    ]
+  }
+};
+
+window.gsheetData = FALLBACK_DATABASE;
+window.gsheetWOLog = FALLBACK_DATABASE.woLog;
+
+function getFirstValue(record, keys) {
+  if (!record || typeof record !== 'object') return '';
+  for (const key of keys) {
+    const value = record[key];
+    if (value !== undefined && value !== null && value !== '') {
+      return value.toString().trim();
+    }
+  }
+  return '';
+}
+
+function getVendorName(vendor) {
+  return (
+    vendor?.name ||
+    vendor?.Name ||
+    vendor?.['Vendor Name'] ||
+    vendor?.vendorName ||
+    vendor?.['Contractor Name'] ||
+    ''
+  ).toString().trim();
+}
+
+function getSiteName(site) {
+  return (
+    site?.name ||
+    site?.Name ||
+    site?.['Site Name'] ||
+    site?.siteName ||
+    site?.['Project Name'] ||
+    ''
+  ).toString().trim();
+}
+
+function getSiteCode(site) {
+  return getFirstValue(site, [
+    'Project Code',
+    'Site Code',
+    'siteCode',
+    'projectCode',
+    'Code',
+    'code',
+    'prefix',
+    'Prefix'
+  ]).toUpperCase() || 'SD';
+}
+
+function getSiteType(site) {
+  return getFirstValue(site, [
+    'Type',
+    'type',
+    'Site Type',
+    'siteType',
+    'Project Type'
+  ]).toUpperCase() || 'RESI';
+}
+
+function normalizeWOLog(woLogRaw) {
+  let woLogRows = [];
+  if (Array.isArray(woLogRaw)) {
+    return woLogRaw.filter(row => row && typeof row === 'object');
+  }
+  if (woLogRaw && typeof woLogRaw === 'object') {
+    Object.entries(woLogRaw).forEach(([key, value]) => {
+      if (value && typeof value === 'object') {
+        woLogRows.push(value);
+        return;
+      }
+      if (value !== undefined && value !== null && value !== '') {
+        woLogRows.push({
+          Site: key.toString().trim(),
+          'WO Number': value.toString().trim()
+        });
+      }
+    });
+  }
+  return woLogRows;
+}
+
+function normalizeSheetData(data) {
+  const payload = data?.data && typeof data.data === 'object' ? data.data : data;
+  return {
+    vendors: Array.isArray(payload?.vendors) ? payload.vendors : (Array.isArray(payload?.contractors) ? payload.contractors : []),
+    sites: Array.isArray(payload?.sites) ? payload.sites : (Array.isArray(payload?.projects) ? payload.projects : []),
+    woLog: normalizeWOLog(payload?.woLog || payload?.woLogs || payload?.workOrders || payload?.log),
+    terms: payload?.terms || FALLBACK_DATABASE.terms
+  };
+}
+
+async function loadSheetData() {
+  const res = await companyApiFetch('/api/sheets/data', { method: 'GET' });
+  if (!res.ok) {
+    throw new Error(`Sheet response failed with status ${res.status}`);
+  }
+  const data = await res.json();
+  return normalizeSheetData(data);
+}
+
+function populateSelectors(dataset) {
+  const vSelect = document.getElementById('vendorSelect');
+  const sSelect = document.getElementById('siteSelect');
+
+  vSelect.innerHTML = '<option value="">-- Select Vendor / Contractor --</option>';
+  sSelect.innerHTML = '<option value="">-- Select Active Project / Site --</option>';
+
+  (dataset.vendors || []).forEach(v => {
+    const name = getVendorName(v);
+    if (!name) return;
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    vSelect.appendChild(opt);
+  });
+
+  (dataset.sites || []).forEach(s => {
+    const name = getSiteName(s);
+    if (!name) return;
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    sSelect.appendChild(opt);
+  });
+
+  window.gsheetData = dataset;
+  window.gsheetWOLog = dataset.woLog || [];
+  updateWODatalist();
+}
+
+function updateWODatalist() {
+  const datalist = document.getElementById('woNumberList');
+  if (!datalist) return;
+  datalist.innerHTML = '';
+  const rows = Array.isArray(window.gsheetWOLog) ? window.gsheetWOLog : [];
+  const seen = new Set();
+
+  rows.forEach(r => {
+    const wo = getFirstValue(r, ['Work Order No', 'WO Number', 'woNumber', 'poNumber', 'PO Number', 'wo_no']);
+    if (wo && !seen.has(wo.toUpperCase())) {
+      seen.add(wo.toUpperCase());
+      const opt = document.createElement('option');
+      opt.value = wo;
+      const site = getFirstValue(r, ['Site', 'site', 'Site Name']);
+      const vendor = getFirstValue(r, ['Contractor', 'contractor', 'Vendor', 'vendor']);
+      opt.label = `${site ? site + ' • ' : ''}${vendor || ''}`;
+      datalist.appendChild(opt);
+    }
+  });
+}
+
+async function searchWorkOrder(targetWo) {
+  const searchInput = document.getElementById('woSearchInput');
+  const query = (targetWo || searchInput?.value || '').trim();
+
+  if (!query) {
+    showToast("Please enter or select a Work Order number to search", "warning");
+    return;
+  }
+
+  showToast(`Searching Google Sheet for ${query}...`);
+
+  let matchedRecord = null;
+
+  // Fetch the record through the authenticated backend proxy.
+  try {
+    const res = await companyApiFetch(`/api/sheets/work-orders?woNumber=${encodeURIComponent(query)}`, { method: 'GET' });
+    if (res.ok) {
+      const json = await res.json();
+      const payload = json?.data || json?.record || json;
+      if (payload && (payload.woNumber || payload['Work Order No'] || payload['WO Number'] || payload.site || payload['Project Site'])) {
+        matchedRecord = payload;
+      }
+    }
+  } catch (err) {
+    console.warn("Work order lookup failed; checking synchronized local log:", err);
+  }
+
+  // 2. If not returned via direct endpoint, check local synchronized log cache
+  if (!matchedRecord) {
+    const rows = Array.isArray(window.gsheetWOLog) ? window.gsheetWOLog : [];
+    matchedRecord = rows.find(r => {
+      const wo = getFirstValue(r, ['Work Order No', 'WO Number', 'woNumber', 'poNumber', 'PO Number', 'wo_no']);
+      return wo.toUpperCase() === query.toUpperCase();
+    });
+  }
+
+  // 3. Render or notify missing
+  if (matchedRecord) {
+    populateLoadedWorkOrder(matchedRecord, query);
+    showToast(`Work Order ${query} loaded successfully!`);
+  } else {
+    showCustomModal({
+      title: "Work Order Not Found",
+      message: `No record matching "${query}" was found in the Google Sheet database. Please verify the Work Order number or click 'New WO' to generate a fresh order.`,
+      iconClass: "fa-solid fa-file-circle-xmark text-amber-500",
+      confirmText: "Understood"
+    });
+  }
+}
+
+function populateLoadedWorkOrder(record, fallbackWo) {
+  const woNo = getFirstValue(record, ['Work Order No', 'WO Number', 'woNumber', 'poNumber', 'PO Number', 'wo_no']) || fallbackWo;
+  const siteName = getFirstValue(record, ['Project Site', 'Site', 'site', 'Site Name', 'projectName', 'Project Name']);
+  const contractorName = getFirstValue(record, ['Contractor Name', 'Contractor', 'contractor', 'vendor', 'Vendor', 'Vendor Name']);
+  const workType = getFirstValue(record, ['workType', 'Work Type', 'type', 'Type']);
+  const woDate = getFirstValue(record, ['Timestamp / Date', 'woDate', 'WO Date', 'Date', 'date', 'timestamp']);
+  const scopeOfWork = getFirstValue(record, ['Scope of Work', 'scopeOfWork', 'scope', 'Scope']);
+
+  // Set WO Number & update badge
+  if (woNo) {
+    document.getElementById('displayWONo').textContent = woNo;
+    const badge = document.getElementById('woStatusBadge');
+    if (badge) {
+      badge.textContent = "Sheet Record Loaded";
+      badge.className = "text-[10px] font-mono px-2 py-0.5 rounded bg-blue-100 text-brand-800 border border-blue-300 font-bold no-print";
+    }
+    if (document.getElementById('woSearchInput')) {
+      document.getElementById('woSearchInput').value = woNo;
+    }
+  }
+
+  // Set Date
+  if (woDate) {
+    document.getElementById('woDate').value = woDate.includes('T') ? woDate.split('T')[0] : woDate;
+  }
+
+  // Set Work Type
+  if (workType) {
+    const wtSelect = document.getElementById('workType');
+    for (let opt of wtSelect.options) {
+      if (opt.value.toLowerCase() === workType.toLowerCase() || opt.text.toLowerCase().includes(workType.toLowerCase())) {
+        wtSelect.value = opt.value;
+        break;
+      }
+    }
+  }
+
+  // Set Site without triggering next serial generation
+  if (siteName) {
+    const sSelect = document.getElementById('siteSelect');
+    let matched = false;
+    for (let opt of sSelect.options) {
+      if (opt.value.trim().toLowerCase() === siteName.trim().toLowerCase()) {
+        sSelect.value = opt.value;
+        matched = true;
+        break;
+      }
+    }
+    if (!matched && siteName) {
+      const opt = document.createElement('option');
+      opt.value = siteName;
+      opt.textContent = siteName;
+      opt.selected = true;
+      sSelect.appendChild(opt);
+    }
+
+    const siteObj = (window.gsheetData?.sites || []).find(s => getSiteName(s).toLowerCase() === siteName.toLowerCase());
+    if (siteObj) {
+      document.getElementById('sDelivered').value = getFirstValue(siteObj, ['Address', 'address', 'Site Address', 'Project Address']);
+      document.getElementById('sContact').value = getFirstValue(siteObj, ['Contact Person', 'contactPerson', 'Engineer Name', 'Site Incharge']);
+      document.getElementById('sEngineer').value = getFirstValue(siteObj, ['Mo. No.', 'Mo No', 'Mobile No.', 'Mobile', 'Phone']);
+    } else {
+      document.getElementById('sDelivered').value = getFirstValue(record, ['Site Address', 'siteAddress', 'address']) || '';
+      document.getElementById('sContact').value = getFirstValue(record, ['Contact Person', 'contactPerson']) || '';
+      document.getElementById('sEngineer').value = getFirstValue(record, ['Mobile', 'mobile', 'moNo']) || '';
+    }
+  }
+
+  // Set Vendor
+  if (contractorName) {
+    const vSelect = document.getElementById('vendorSelect');
+    let matched = false;
+    for (let opt of vSelect.options) {
+      if (opt.value.trim().toLowerCase() === contractorName.trim().toLowerCase()) {
+        vSelect.value = opt.value;
+        matched = true;
+        break;
+      }
+    }
+    if (!matched && contractorName) {
+      const opt = document.createElement('option');
+      opt.value = contractorName;
+      opt.textContent = contractorName;
+      opt.selected = true;
+      vSelect.appendChild(opt);
+    }
+    autoFillVendor();
+  }
+
+  // Populate Work Item rows
+  let items = record.items;
+  if (typeof items === 'string') {
+    try { items = JSON.parse(items); } catch (e) { items = null; }
+  }
+
+  if (Array.isArray(items) && items.length > 0) {
+    const workTbody = document.getElementById('workBody');
+    workTbody.innerHTML = '';
+    items.forEach(it => {
+      addWorkRow({
+        area: it.area || it.specification || it['Area of Specification'] || '',
+        tech: it.tech || it.technical || it['Technical Specification'] || '',
+        measurement: it.measurement ?? it.qty ?? '',
+        unit: it.unit || 'sqft',
+        rate: it.rate ?? ''
+      });
+    });
+  }
+
+  // Populate Milestone rows
+  let milestones = record.milestones;
+  if (typeof milestones === 'string') {
+    try { milestones = JSON.parse(milestones); } catch (e) { milestones = null; }
+  }
+
+  if (Array.isArray(milestones) && milestones.length > 0) {
+    const msTbody = document.getElementById('milestoneBody');
+    msTbody.innerHTML = '';
+    milestones.forEach(m => {
+      addMilestoneRow({
+        desc: m.desc || m.description || m['Milestone Description'] || '',
+        type: m.type || m.scope || m['Scope / Area Type'] || 'TOTAL',
+        pct: m.pct ?? m.percentage ?? ''
+      });
+    });
+  }
+
+  // Restore Scope of Work if present in record, otherwise keep empty
+  const scopeBox = document.getElementById('scopeOfWorkBox');
+  if (scopeBox) {
+    scopeBox.innerHTML = scopeOfWork || '';
+  }
+
+  autoResizeAllTextareas();
+  calculateTotals();
+}
+
+// Point 1: Reset to clean, blank form when opened or new WO created
+function resetToBlankForm() {
+  const today = new Date();
+  const dateStr = today.toISOString().split('T')[0].split('-').reverse().join('/');
+  document.getElementById('woDate').value = dateStr;
+  
+  const searchInput = document.getElementById('woSearchInput');
+  if (searchInput) searchInput.value = '';
+
+  const badge = document.getElementById('woStatusBadge');
+  if (badge) {
+    badge.textContent = "New Work Order Draft";
+    badge.className = "text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold no-print";
+  }
+
+  // Display placeholder WO number until site is chosen
+  document.getElementById('displayWONo').textContent = "---";
+
+  // Reset Vendor fields
+  const vSelect = document.getElementById('vendorSelect');
+  if (vSelect) vSelect.selectedIndex = 0;
+  document.getElementById('vCode').value = "";
+  document.getElementById('vAadhar').value = "";
+  document.getElementById('vPan').value = "";
+  document.getElementById('vGst').value = "";
+
+  // Reset Site fields
+  const sSelect = document.getElementById('siteSelect');
+  if (sSelect) sSelect.selectedIndex = 0;
+  document.getElementById('sDelivered').value = "";
+  document.getElementById('sContact').value = "";
+  document.getElementById('sEngineer').value = "";
+
+  // Reset Work items table to a single blank row
+  const workTbody = document.getElementById('workBody');
+  workTbody.innerHTML = '';
+  addWorkRow();
+
+  // Reset Milestones table to a single blank row
+  const msTbody = document.getElementById('milestoneBody');
+  msTbody.innerHTML = '';
+  addMilestoneRow();
+
+  // Point 2: Scope of work is completely blank by default
+  const scopeBox = document.getElementById('scopeOfWorkBox');
+  if (scopeBox) scopeBox.innerHTML = '';
+
+  autoResizeAllTextareas();
+  calculateTotals();
+  showToast("Ready: Blank Work Order template initialized");
+}
+
+function resetToNewWorkOrder() {
+  resetToBlankForm();
+}
+
+function autoFillVendor() {
+  const name = document.getElementById('vendorSelect').value;
+  const vendor = (window.gsheetData?.vendors || []).find(v => getVendorName(v) === name);
+  if (vendor) {
+    document.getElementById('vCode').value = getFirstValue(vendor, ['Address', 'address', 'Office Address', 'Code', 'Vendor Code']);
+    document.getElementById('vAadhar').value = getFirstValue(vendor, ['Aadhar No.', 'Aadhar No', 'Aadhaar No', 'aadhar']);
+    document.getElementById('vPan').value = getFirstValue(vendor, ['PAN No.', 'PAN No', 'Pan No', 'pan']);
+    document.getElementById('vGst').value = getFirstValue(vendor, ['GST No.', 'GST No', 'GSTIN', 'gst']);
+    showToast(`Vendor profile loaded: ${name}`);
+  } else {
+    document.getElementById('vCode').value = "";
+    document.getElementById('vAadhar').value = "";
+    document.getElementById('vPan').value = "";
+    document.getElementById('vGst').value = "";
+  }
+}
+
+function autoFillSite() {
+  const name = document.getElementById('siteSelect').value;
+  const site = (window.gsheetData?.sites || []).find(s => getSiteName(s) === name);
+  if (site) {
+    document.getElementById('sDelivered').value = getFirstValue(site, ['Address', 'address', 'Site Address', 'Project Address']);
+    document.getElementById('sContact').value = getFirstValue(site, ['Contact Person', 'contactPerson', 'Engineer Name', 'Site Incharge']);
+    document.getElementById('sEngineer').value = getFirstValue(site, ['Mo. No.', 'Mo No', 'Mobile No.', 'Mobile', 'Phone']);
+
+    const code = getSiteCode(site);
+    const type = getSiteType(site);
+
+    generateWONo(type, code, name);
+    showToast(`Project site linked: ${name}`);
+  } else {
+    document.getElementById('sDelivered').value = "";
+    document.getElementById('sContact').value = "";
+    document.getElementById('sEngineer').value = "";
+    document.getElementById('displayWONo').textContent = "---";
+  }
+}
+
+function extractPOSerial(woNumber) {
+  const match = (woNumber || '').toString().match(/PO(\d+)/i);
+  return match ? (parseInt(match[1], 10) || 0) : 0;
+}
+
+function getNextPOSerial(siteName, projectCode) {
+  const selectedSite = (siteName || '').trim().toUpperCase();
+  const selectedCode = (projectCode || '').trim().toUpperCase();
+  const rows = Array.isArray(window.gsheetWOLog) ? window.gsheetWOLog : [];
+  let maxSerial = 0;
+
+  rows.forEach(row => {
+    const rowSite = (getFirstValue(row, ['Site', 'site', 'Site Name'])).toUpperCase();
+    const rowPO = getFirstValue(row, ['WO Number', 'woNumber', 'PO Number', 'poNumber']).toUpperCase();
+    if (rowSite === selectedSite || rowPO.includes(`/${selectedCode}/`)) {
+      maxSerial = Math.max(maxSerial, extractPOSerial(rowPO));
+    }
+  });
+
+  return maxSerial + 1;
+}
+
+function generateWONo(type, projectCode, siteName) {
+  const cleanType = (type || 'RESI').trim().toUpperCase();
+  const cleanCode = (projectCode || 'SITE').trim().toUpperCase().replace(/\s+/g, '-');
+  const serial = getNextPOSerial(siteName, cleanCode);
+  const now = new Date();
+  const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+  const woNo = `${cleanType}/${cleanCode}/PO${serial}/${dateStr}`;
+  document.getElementById('displayWONo').textContent = woNo;
+}
+
+const AVAILABLE_UNITS = [
+  { val: "sqft", label: "Square Feet (sqft)" },
+  { val: "sqm", label: "Square Meter (sqm)" },
+  { val: "cft", label: "Cubic Feet (cft)" },
+  { val: "cum", label: "Cubic Meter (cum)" },
+  { val: "rmt", label: "Running Meter (rmt)" },
+  { val: "kg", label: "Kilogram (kg)" },
+  { val: "mt", label: "Metric Ton (MT)" },
+  { val: "nos", label: "Numbers (Nos)" },
+  { val: "day", label: "Day" },
+  { val: "hr", label: "Hour" },
+  { val: "lot", label: "Lot" },
+  { val: "job", label: "Job Work" }
+];
+
+function createUnitOptions(selected = "sqft") {
+  return AVAILABLE_UNITS.map(u => `<option value="${u.val}" ${u.val === selected ? 'selected' : ''}>${u.label}</option>`).join('');
+}
+
+function autoResize(el) {
+  if (!el) return;
+  el.style.height = 'auto';
+  el.style.height = Math.max(34, el.scrollHeight) + 'px';
+}
+
+function autoResizeAllTextareas() {
+  document.querySelectorAll('textarea.cell-textarea').forEach(el => autoResize(el));
+}
+
+function addWorkRow(data = {}) {
+  const tbody = document.getElementById('workBody');
+  const count = tbody.rows.length + 1;
+  const row = document.createElement('tr');
+  row.innerHTML = `
+    <td class="text-center font-mono text-xs text-slate-500 row-index">${count}</td>
+    <td><textarea rows="1" class="cell-textarea" placeholder="e.g. Living Area Tiles" oninput="autoResize(this)">${data.area || ''}</textarea></td>
+    <td><textarea rows="1" class="cell-textarea" placeholder="e.g. 600x600mm Vitrified" oninput="autoResize(this)">${data.tech || ''}</textarea></td>
+    <td><input type="number" step="any" class="cell-input text-right font-mono area-val" value="${data.measurement ?? ''}" placeholder="0" oninput="calculateTotals()"></td>
+    <td>
+      <select class="cell-input text-xs font-medium text-slate-700 bg-white">
+        ${createUnitOptions(data.unit || 'sqft')}
+      </select>
+    </td>
+    <td><input type="number" step="any" class="cell-input text-right font-mono rate-val" value="${data.rate ?? ''}" placeholder="0" oninput="calculateTotals()"></td>
+    <td class="text-right font-mono font-bold text-slate-800 row-amt">0.00</td>
+    <td class="text-center no-print btn-action-col">
+      <button type="button" onclick="removeRow(this, 'workBody')" class="text-rose-400 hover:text-rose-600 p-1 transition" title="Delete Row">
+        <i class="fa-regular fa-trash-can"></i>
+      </button>
+    </td>
+  `;
+  tbody.appendChild(row);
+  row.querySelectorAll('textarea.cell-textarea').forEach(t => autoResize(t));
+  calculateTotals();
+}
+
+function addMilestoneRow(data = {}) {
+  const tbody = document.getElementById('milestoneBody');
+  const count = tbody.rows.length + 1;
+  const row = document.createElement('tr');
+  row.innerHTML = `
+    <td class="text-center font-mono text-xs text-slate-500 row-index">${count}</td>
+    <td><textarea rows="1" class="cell-textarea" placeholder="e.g. Plinth & Foundation Completion" oninput="autoResize(this)">${data.desc || ''}</textarea></td>
+    <td><textarea rows="1" class="cell-textarea" placeholder="e.g. TOTAL" oninput="autoResize(this)">${data.type || 'TOTAL'}</textarea></td>
+    <td><input type="number" step="any" class="cell-input text-right font-mono pct-val" value="${data.pct ?? ''}" placeholder="0" oninput="calculateTotals()"></td>
+    <td class="text-right font-mono font-bold text-slate-800 milestone-amt">0.00</td>
+    <td class="text-center no-print btn-action-col">
+      <button type="button" onclick="removeRow(this, 'milestoneBody')" class="text-rose-400 hover:text-rose-600 p-1 transition" title="Delete Stage">
+        <i class="fa-regular fa-trash-can"></i>
+      </button>
+    </td>
+  `;
+  tbody.appendChild(row);
+  row.querySelectorAll('textarea.cell-textarea').forEach(t => autoResize(t));
+  calculateTotals();
+}
+
+function removeRow(btn, tableId) {
+  const tbody = document.getElementById(tableId);
+  if (tbody.rows.length <= 1) {
+    showToast("At least one entry row must be maintained.", "warning");
+    return;
+  }
+  btn.closest('tr').remove();
+  reindexRows(tableId);
+  calculateTotals();
+}
+
+function reindexRows(tableId) {
+  const rows = document.querySelectorAll(`#${tableId} tr`);
+  rows.forEach((r, idx) => {
+    const idxEl = r.querySelector('.row-index');
+    if (idxEl) idxEl.textContent = idx + 1;
+  });
+}
+
+function calculateTotals() {
+  let grandTotal = 0;
+  let totalArea = 0;
+
+  document.querySelectorAll('#workBody tr').forEach(row => {
+    const area = parseFloat(row.querySelector('.area-val')?.value) || 0;
+    const rate = parseFloat(row.querySelector('.rate-val')?.value) || 0;
+    const sub = area * rate;
+    const amtEl = row.querySelector('.row-amt');
+    if (amtEl) amtEl.textContent = sub.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    grandTotal += sub;
+    totalArea += area;
+  });
+
+  const grandTotalEl = document.getElementById('workGrandTotal');
+  const totalAreaEl = document.getElementById('totalAreaSummary');
+  if (grandTotalEl) grandTotalEl.textContent = `₹` + grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (totalAreaEl) totalAreaEl.textContent = totalArea.toFixed(2);
+
+  // Calculate milestones
+  let totalPct = 0;
+  let totalMilestoneAmt = 0;
+
+  document.querySelectorAll('#milestoneBody tr').forEach(row => {
+    const pct = parseFloat(row.querySelector('.pct-val')?.value) || 0;
+    const milestoneAmt = (grandTotal * pct) / 100;
+    const amtEl = row.querySelector('.milestone-amt');
+    if (amtEl) amtEl.textContent = milestoneAmt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    totalPct += pct;
+    totalMilestoneAmt += milestoneAmt;
+  });
+
+  const pctSummary = document.getElementById('milestonePctSummary');
+  const amtSummary = document.getElementById('milestoneAmtSummary');
+  const pctBadge = document.getElementById('percentageBadge');
+
+  if (pctSummary) pctSummary.textContent = `${totalPct.toFixed(1)}%`;
+  if (amtSummary) amtSummary.textContent = `₹` + totalMilestoneAmt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  if (pctBadge) {
+    pctBadge.textContent = `Milestone Total: ${totalPct.toFixed(1)}%`;
+    if (Math.abs(totalPct - 100) < 0.1 && totalPct > 0) {
+      pctBadge.className = "text-[11px] px-2 py-0.5 rounded font-mono font-bold bg-emerald-500 text-white";
+    } else {
+      pctBadge.className = "text-[11px] px-2 py-0.5 rounded font-mono font-bold bg-amber-500 text-slate-900";
+    }
+  }
+}
+
+function buildWorkOrderPdfPayload() {
+  const woNo = document.getElementById('displayWONo').textContent;
+  const siteName = document.getElementById('siteSelect').value;
+  const contractor = document.getElementById('vendorSelect').value;
+  const vendorRecord = (window.gsheetData?.vendors || []).find(v => getVendorName(v) === contractor);
+  let totalAmount = 0;
+  const items = [];
+  document.querySelectorAll('#workBody tr').forEach(row => {
+    const measurement = parseFloat(row.querySelector('.area-val')?.value || 0) || 0;
+    const rate = parseFloat(row.querySelector('.rate-val')?.value || 0) || 0;
+    totalAmount += measurement * rate;
+    const fields = row.querySelectorAll('textarea');
+    items.push({
+      area: fields[0]?.value || '',
+      tech: fields[1]?.value || '',
+      measurement,
+      unit: row.querySelector('select')?.value || 'sqft',
+      rate
+    });
+  });
+
+  const milestones = [];
+  document.querySelectorAll('#milestoneBody tr').forEach(row => {
+    const fields = row.querySelectorAll('textarea');
+    milestones.push({
+      desc: fields[0]?.value || '',
+      type: fields[1]?.value || 'TOTAL',
+      pct: parseFloat(row.querySelector('.pct-val')?.value || 0) || 0
+    });
+  });
+
+  return {
+    action: 'saveWorkOrder',
+    site: siteName,
+    woNumber: woNo,
+    contractor,
+    contractorType: getFirstValue(vendorRecord, ['Contractor Type', 'Contractor type', 'contractorType']) || document.getElementById('workType').value || 'Labor Only',
+    amount: totalAmount,
+    workType: document.getElementById('workType').value || "",
+    woDate: document.getElementById('woDate').value || "",
+    scopeOfWork: document.getElementById('scopeOfWorkBox')?.innerText || "",
+    contractorAddress: document.getElementById('vCode')?.value || "",
+    aadhaar: document.getElementById('vAadhar')?.value || "",
+    pan: document.getElementById('vPan')?.value || "",
+    gst: document.getElementById('vGst')?.value || "",
+    siteAddress: document.getElementById('sDelivered')?.value || "",
+    siteContact: document.getElementById('sContact')?.value || "",
+    siteMobile: document.getElementById('sEngineer')?.value || "",
+    basicTerms: document.getElementById('basicTermsBox')?.innerText || "",
+    paymentTerms: document.getElementById('paymentTermsBox')?.innerText || "",
+    specificTerms: document.getElementById('specificTermsBox')?.innerText || "",
+    items: JSON.stringify(items),
+    milestones: JSON.stringify(milestones),
+    pdfLink: "",
+    createdBy: "web-erp",
+    sheet: "WO_Format",
+    timestamp: document.getElementById('woDate').value || new Date().toISOString()
+  };
+}
+
+function handlePrintPdf() {
+  autoResizeAllTextareas();
+  calculateTotals();
+  const payload = buildWorkOrderPdfPayload();
+
+  showCustomModal({
+    title: "Print / Save Work Order PDF",
+    message: "This opens the same A4 PDF format used by <strong>Submit to Log → Download PDF</strong>. Use the PDF viewer's print or save controls.",
+    iconClass: "fa-solid fa-file-pdf text-brand-gold",
+    confirmText: "Open PDF",
+    onConfirm: () => {
+      const pdfWindow = window.open("about:blank", "_blank");
+      if (!pdfWindow) {
+        showToast("Allow pop-ups to open the work order PDF.", "error");
+        return;
+      }
+      pdfWindow.document.title = `Work Order ${payload.woNumber}`;
+      pdfWindow.document.body.textContent = "Generating the work order PDF...";
+      downloadWorkOrderPdf(payload, { openInViewer: true, viewerWindow: pdfWindow });
+    }
+  });
+}
+
+function showToast(message, type = "success") {
+  const toast = document.getElementById('toastNotification');
+  const toastText = document.getElementById('toastText');
+  const toastIcon = document.getElementById('toastIcon');
+
+  toastText.textContent = message;
+  if (type === "warning") {
+    toastIcon.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-400"></i>`;
+  } else if (type === "error") {
+    toastIcon.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-400"></i>`;
+  } else {
+    toastIcon.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i>`;
+  }
+
+  toast.classList.remove('translate-y-[-100px]', 'opacity-0', 'pointer-events-none');
+  setTimeout(() => {
+    toast.classList.add('translate-y-[-100px]', 'opacity-0', 'pointer-events-none');
+  }, 3200);
+}
+
+function showCustomModal({ title, message, iconClass, confirmText, onConfirm }) {
+  const modal = document.getElementById('customModal');
+  const titleEl = document.getElementById('modalTitle');
+  const msgEl = document.getElementById('modalMessage');
+  const confirmBtn = document.getElementById('modalConfirmBtn');
+  const iconContainer = document.getElementById('modalIconContainer');
+
+  titleEl.textContent = title || "Notice";
+  msgEl.innerHTML = message;
+  confirmBtn.textContent = confirmText || "OK";
+
+  if (iconClass) {
+    iconContainer.innerHTML = `<i class="${iconClass}"></i>`;
+  }
+
+  confirmBtn.onclick = () => {
+    closeCustomModal();
+    if (typeof onConfirm === 'function') onConfirm();
+  };
+
+  modal.classList.remove('hidden');
+}
+
+function closeCustomModal() {
+  document.getElementById('customModal').classList.add('hidden');
+}
+
+async function reloadFromSheet() {
+  const statusEl = document.getElementById('reloadStatus');
+  statusEl.textContent = "Connecting to Google Sheet...";
+  try {
+    const sheetData = await loadSheetData();
+    populateSelectors(sheetData);
+    statusEl.textContent = `Google Sheet synchronized. Vendors: ${sheetData.vendors.length}, Sites: ${sheetData.sites.length}`;
+    showToast("Google Sheet data loaded successfully");
+  } catch (err) {
+    console.warn("Sheet reload fallback to cache:", err);
+    populateSelectors(FALLBACK_DATABASE);
+    statusEl.textContent = `Local Database active (${err.message})`;
+  }
+}
+
+function loadSampleData() {
+  populateSelectors(FALLBACK_DATABASE);
+  const vSelect = document.getElementById('vendorSelect');
+  const sSelect = document.getElementById('siteSelect');
+
+  if (vSelect.options.length > 1) vSelect.selectedIndex = 1;
+  if (sSelect.options.length > 1) sSelect.selectedIndex = 1;
+
+  autoFillVendor();
+  autoFillSite();
+
+  const workTbody = document.getElementById('workBody');
+  const msTbody = document.getElementById('milestoneBody');
+  workTbody.innerHTML = '';
+  msTbody.innerHTML = '';
+
+  addWorkRow({ area: "Basement & Stilt Slab", tech: "M25 Grade RMC Concrete Casting", measurement: 4500, unit: "sqft", rate: 320 });
+  addWorkRow({ area: "External Brickwork", tech: "AAC Lightweight Blocks 200mm", measurement: 2800, unit: "sqft", rate: 110 });
+  addWorkRow({ area: "Plaster & Rendering", tech: "Double Coat Sand Faced Plaster", measurement: 5600, unit: "sqft", rate: 45 });
+
+  addMilestoneRow({ desc: "Plinth & Foundation Completion", type: "TOTAL", pct: 20 });
+  addMilestoneRow({ desc: "Superstructure Frame & Slabs", type: "TOTAL", pct: 40 });
+  addMilestoneRow({ desc: "Masonry & Internal Plastering", type: "TOTAL", pct: 25 });
+  addMilestoneRow({ desc: "Finishing & Final Handover Certificate", type: "TOTAL", pct: 15 });
+
+  autoResizeAllTextareas();
+  calculateTotals();
+  showToast("Demo construction work order populated!");
+}
+
+async function generateWorkOrderPdf(payload) {
+  const response = await companyApiFetch("/api/work-orders/pdf", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  if (!response.ok) {
+    throw new Error(`PDF service returned status ${response.status}`);
+  }
+  if (!(response.headers.get("content-type") || "").includes("application/pdf")) {
+    throw new Error("PDF service returned an unexpected content type.");
+  }
+  return response.blob();
+}
+
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result !== "string") {
+        reject(new Error("Could not encode the generated PDF for Google Drive."));
+        return;
+      }
+      resolve(reader.result);
+    };
+    reader.onerror = () => reject(reader.error || new Error("Could not read the generated PDF."));
+    reader.readAsDataURL(blob);
+  });
+}
+
+function savePdfBlob(blob, payload) {
+  const pdfUrl = URL.createObjectURL(blob);
+  const downloadLink = document.createElement("a");
+  downloadLink.href = pdfUrl;
+  downloadLink.download = `${payload.woNumber.replace(/[^A-Za-z0-9._-]+/g, "_")}.pdf`;
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  downloadLink.remove();
+  setTimeout(() => URL.revokeObjectURL(pdfUrl), 1000);
+}
+
+async function downloadWorkOrderPdf(payload, options = {}) {
+  try {
+    const pdfBlob = options.pdfBlob || await generateWorkOrderPdf(payload);
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    if (options.openInViewer) {
+      if (!options.viewerWindow || options.viewerWindow.closed) {
+        URL.revokeObjectURL(pdfUrl);
+        throw new Error("The PDF viewer window was closed before the file was ready.");
+      }
+      options.viewerWindow.location.href = pdfUrl;
+      showToast("Open the PDF viewer controls to print or save this work order.");
+      return;
+    }
+
+    const downloadLink = document.createElement("a");
+    downloadLink.href = pdfUrl;
+    downloadLink.download = `${payload.woNumber.replace(/[^A-Za-z0-9._-]+/g, "_")}.pdf`;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    downloadLink.remove();
+    setTimeout(() => URL.revokeObjectURL(pdfUrl), 1000);
+    showToast("Print-ready work order PDF downloaded successfully.");
+  } catch (error) {
+    if (options.viewerWindow && !options.viewerWindow.closed) {
+      options.viewerWindow.close();
+    }
+    console.error("Python PDF generation failed:", error);
+    showCustomModal({
+      title: "Could Not Generate Work Order PDF",
+      message: "The same-format PDF service could not generate the file. Confirm the Python service is running, then try again. The browser print layout is not used because it would create a different format.",
+      iconClass: "fa-solid fa-file-circle-exclamation text-amber-600",
+      confirmText: "Close"
+    });
+  }
+}
+
+// Point 4: Submit data to WO log in Google Sheet & immediately prompt to download PDF
+async function saveToLog() {
+  const payload = buildWorkOrderPdfPayload();
+  const woNo = payload.woNumber;
+  const siteName = payload.site;
+  const contractor = payload.contractor;
+
+  if (!siteName || !contractor || woNo === "---") {
+    showCustomModal({
+      title: "Missing Information",
+      message: "Please select both a Vendor and an Active Project Site to generate the Work Order number before submitting.",
+      iconClass: "fa-solid fa-triangle-exclamation text-amber-600",
+      confirmText: "Understood"
+    });
+    return;
+  }
+
+  const totalAmount = payload.amount;
+  const items = JSON.parse(payload.items);
+  const milestones = JSON.parse(payload.milestones);
+  let pdfBlob = null;
+
+  showToast("Generating the Work Order PDF...");
+
+  try {
+    pdfBlob = await generateWorkOrderPdf(payload);
+    const pdfDataUrl = await blobToDataUrl(pdfBlob);
+    const formBody = new URLSearchParams();
+    Object.entries(payload).forEach(([k, v]) => formBody.append(k, v ?? ''));
+    formBody.append('pdfBase64', pdfDataUrl);
+    formBody.append('pdfFileName', `${woNo.replace(/[^A-Za-z0-9._-]+/g, "_")}.pdf`);
+
+    showToast("Saving Work Order and matching PDF to Google Sheets / Drive...");
+    const res = await companyApiFetch("/api/sheets/work-orders", {
+      method: 'POST',
+      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+      body: formBody
+    });
+    if (!res.ok) {
+      throw new Error(`Sheet response failed with status ${res.status}`);
+    }
+
+    const raw = await res.text();
+    let data;
+    try {
+      data = raw ? JSON.parse(raw) : {};
+    } catch (err) {
+      throw new Error("The Apps Script returned an invalid response.");
+    }
+
+    if (data.success !== true) {
+      throw new Error(data.error || "Save rejected by script.");
+    }
+    let pdfDriveUrl = null;
+    if (data.pdfUrl) {
+      try {
+        pdfDriveUrl = new URL(data.pdfUrl);
+      } catch (err) {
+        throw new Error("The Apps Script returned an invalid PDF Drive link.");
+      }
+      if (pdfDriveUrl.protocol !== 'https:' || pdfDriveUrl.hostname !== 'drive.google.com') {
+        throw new Error("The Apps Script returned a non-Google-Drive PDF link.");
+      }
+    }
+
+    // Register into local log tracker
+    window.gsheetWOLog.push({ 
+      Site: siteName, 
+      'WO Number': woNo,
+      Contractor: contractor,
+      contractorType: payload.contractorType,
+      Amount: totalAmount,
+      workType: payload.workType,
+      woDate: payload.woDate,
+      scopeOfWork: payload.scopeOfWork,
+      items: items,
+      milestones: milestones
+    });
+    updateWODatalist();
+
+    // Point 4: Popup to download PDF upon submission
+    const pdfLinkHtml = pdfDriveUrl
+      ? `<br><br><a href="${pdfDriveUrl.href}" target="_blank" rel="noopener noreferrer" class="text-blue-700 underline">Open saved PDF in Google Drive</a>`
+      : `<br><br><span class="text-amber-700">Note: No Drive PDF link was created. Use Print / Save PDF to open the same formatted local PDF.</span>`;
+
+    showCustomModal({
+      title: "Work Order Recorded in Google Sheet",
+      message: `Work Order <strong>${woNo}</strong> for <strong>${contractor}</strong> (Total Value: <strong>₹${totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong>) and its matching logo-branded PDF were recorded successfully in <strong>WO_Log</strong>.${pdfLinkHtml}<br><br>The downloaded PDF is the same file saved to Google Drive.`,
+      iconClass: "fa-solid fa-circle-check text-emerald-600",
+      confirmText: "Download PDF",
+      onConfirm: () => {
+        savePdfBlob(pdfBlob, payload);
+        showToast("Downloaded the same PDF saved to Google Drive.");
+      }
+    });
+
+  } catch (err) {
+    console.warn("Server logging simulation fallback:", err);
+    window.gsheetWOLog.push({ 
+      Site: siteName, 
+      'WO Number': woNo,
+      Contractor: contractor,
+      contractorType: payload.contractorType,
+      Amount: totalAmount,
+      workType: payload.workType,
+      woDate: payload.woDate,
+      scopeOfWork: payload.scopeOfWork,
+      items: items,
+      milestones: milestones
+    });
+    updateWODatalist();
+    
+    showCustomModal({
+      title: "Could Not Confirm Google Sheet Save",
+      message: `Work Order <strong>${woNo}</strong> could not be confirmed as saved with its PDF to Google Sheets / Drive. It was only added to this page session's local list; check WO_Log and Drive before retrying to avoid duplicates. Value: <strong>₹${totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong>.<br><br>You can still download the generated logo-branded PDF.`,
+      iconClass: "fa-solid fa-file-circle-check text-brand-gold",
+      confirmText: "Download PDF",
+      onConfirm: () => {
+        if (pdfBlob) {
+          savePdfBlob(pdfBlob, payload);
+          showToast("Downloaded the generated work-order PDF.");
+        } else {
+          downloadWorkOrderPdf(payload);
+        }
+      }
+    });
+  }
+}
+
+// Point 1: Clean blank form initialization on load
+async function startWorkOrderApp() {
+  resetToBlankForm();
+  await reloadFromSheet();
+  updateWODatalist();
+  setTimeout(autoResizeAllTextareas, 60);
+}
+
+window.onload = initializeCompanyAuthentication;
+
+window.addEventListener('beforeprint', () => {
+  autoResizeAllTextareas();
+  calculateTotals();
+});
+</script>
+
+
+</body></html>

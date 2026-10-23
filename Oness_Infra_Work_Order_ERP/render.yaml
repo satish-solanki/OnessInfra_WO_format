@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: oness-infra-work-order-erp
+    runtime: python
+    buildCommand: pip install -r backend/python/requirements.txt
+    startCommand: cd backend/python && uvicorn app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.10
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_ALLOWED_EMAIL_DOMAIN
+        sync: false
+      - key: APPS_SCRIPT_URL
+        sync: false
+      - key: APPS_SCRIPT_PROXY_KEY
+        sync: false
